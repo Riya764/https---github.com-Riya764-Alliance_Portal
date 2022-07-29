@@ -1,0 +1,196 @@
+{% extends "admin/change_form.html" %} {{ form.media }}
+{% load i18n admin_static admin_modify order_tags static %} {% block content %}
+
+<div id="content-main">
+    <div class="module filtered" id="changelist">
+        <fieldset class="module aligned cols-2">
+            <form method="GET" class="post-form" id="advanced_search">
+                {{ form.as_p }}
+                <div class="submit-row">
+                    <div class="float-left">
+                        <input type="button" value="Clear" class="reset" style="float: left;"
+                            name="_reset" />
+                        <input type="submit" class="default" name="_search" value="Search" />
+                    </div>
+
+
+                    <div class="float-right">
+                        <a href="download-csv/?{{ request.GET.urlencode }}" {% if not data %}
+                            onclick="return false;" {% endif %} class="default">&nbsp;Download
+                            Record(s)</a>
+                    </div>
+                </div>
+            </form>
+        </fieldset>
+        <form id="changelist-form" method="post" novalidate="">
+            {%csrf_token%}
+            <div class="results">
+                <table id="result_list">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="sortable column-payment_status secondary">
+                                <div class="text"><span>Base Pack Name</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>Distributor</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>RSP</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>State</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>MoC</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>Ordered</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>Dispatched</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>Amount</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span></span></div>
+                                <div class="clear"></div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in data %}
+                        <tr class="row1">
+
+                            <td class="field-created nowrap secondary">
+                                {{record.product__basepack_name|title}}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {{record.distributor_order__distributor__name|title}}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {{record.distributor_order__sales_promoter__regionalsalespromoter__rsp_id}}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {{record.shipping_address__state__name}}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {{record.moc_name}}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {{record.ordered_amount|round_to_2}}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {{record.dispatched_amount|round_to_2}}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {{record.grand_total|round_to_2}}
+                            </td>
+                            <td class="field-created nowrap secondary">
+
+                            </td>
+
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">No Record Found</td>
+                        </tr>
+                        {% endfor %} {% if data %}
+                        <tr class="row1">
+
+                            <td class="field-created nowrap secondary">
+                                <b> Grand Total</b>
+                            </td>
+                            <td class="field-created nowrap secondary">
+
+                            </td>
+                            <td class="field-created nowrap secondary">
+
+                            </td>
+                            <td class="field-created nowrap secondary">
+
+                            </td>
+                            <td class="field-created nowrap secondary">
+
+                            </td>
+                            <td class="field-created nowrap secondary">
+
+                            </td>
+                            <td class="field-created nowrap secondary">
+
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                <b>{{total_cost|round_to_2}}</b>
+                            </td>
+
+                        </tr>
+                        {% endif %}
+
+                    </tbody>
+                </table>
+
+            </div>
+
+
+        </form>
+    </div>
+</div>
+<style>
+    .timezonewarning {
+        display: none;
+    }
+
+    ul li {
+        list-style-type: none;
+    }
+
+    td,
+    th {
+        padding: 8px 20px;
+    }
+</style>
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'admin/js/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/core.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/calendar.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/admin/DateTimeShortcuts.js' %}"></script>
+<script type="text/javascript">
+    (function ($) {
+
+        $(".reset").click(function () {
+            $(this).closest('form').find(".clear").val("");
+            //$(this).closest('form')[0].reset();
+        });
+
+
+
+
+        function date_validation() {
+            start_date = $('#id_start_date').val();
+            end_date = $('#id_end_date').val();
+
+            if (start_date && end_date) {
+                if (end_date < start_date) {
+                    $("#content-main").prepend('<div class="errornote">End date should not be less than start date.</div>');
+                    $('html,body').animate({
+                        scrollTop: 0
+                    });
+                    return false;
+                }
+
+            }
+            return true;
+        }
+
+    })(django.jQuery);
+</script>
+{% endblock %}

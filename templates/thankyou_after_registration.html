@@ -1,0 +1,124 @@
+{% load staticfiles %}
+{% block parent %}
+    {% block child %}
+ {% block content %}
+ <body style="padding:0; margin: 0; background-color: #f9f9f9;">
+    <table align="center" bgcolor="#f9f9f9" border="0" cellpadding="0" cellspacing="0" style="width: 100%">
+      <tbody>
+        <tr bgcolor="#f9f9f9">
+          <td height="20">
+            <table align="center" bgcolor="#f9f9f9" border="0" cellpadding="0" cellspacing="0" style="width: 600px;">
+              <tbody>
+                <tr bgcolor="#f9f9f9">
+                  <td height="20">&nbsp;</td>
+                </tr>
+                <tr bgcolor="#f9f9f9">
+                  <td height="20">&nbsp;</td>
+                </tr>
+                <tr bgcolor="#f9f9f9">
+                  <td>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="http://mabon.netsolutions.in/stageClip/email/stage-clip-logo.png" width="72" height="72" title="Stage Clip" alt="Stage Clip">
+                  </td>
+                </tr>
+                <tr bgcolor="#f9f9f9">
+                  <td height="20">&nbsp;</td>
+                </tr>
+                <tr bgcolor="#f9f9f9">
+                  <td style="font-family: arial; color: #5c5c5c; font-size: 14px;">
+                    <table align="center" border="0" bgcolor="#ffffff" width="542px" cellpadding="28" cellspacing="0" style="width: 542px; border-radius: 5px; border: 1px solid #dedede; box-shadow: 0 0 1px rgba(0,0,0,0.1)">
+                      <tbody>
+                        <tr>
+                          <td>
+                            <table align="center" border="0" cellpadding="0" width="542" cellspacing="0" style="width: 542px;">
+                              <tbody>
+                                <tr>
+                                  <td style="color: #717171; font-size: 15px; font-weight: 400; font-family: arial; text-align: left;">
+                                    Hello {{user.name}},
+                                  </td>
+                                </tr>
+                                <tr>
+                                  <td>
+                                    <table align="center" border="0" cellpadding="0" cellspacing="0" style="width: 100%;">
+                                      <tbody>
+                                        <tr>
+                                          <td height="15">&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                          <td>
+                                            <div style="color: #717171; font-size: 15px; font-weight: 400; line-height: 22px; font-family: arial; text-align: left;">
+												Welcome to Stage Clip App.
+											</div>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td height="15">&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                          <td>
+                                            <div style="color: #717171; font-size: 15px; font-weight: 400; line-height: 22px; font-family: arial; text-align: left;">
+											Your registered email address: ({{user.email}})
+											</div>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td height="15">&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                          <td>
+                                            <div style="color: #717171; font-size: 15px; font-weight: 400; line-height: 22px; font-family: arial; text-align: left;">
+											In case you forget your password, you can reset at (<a href="{{ user.protocol }}://{{ user.domain }}{% url 'password_reset' %}"  style="font-weight:bold; font-size:15px"> {{ user.protocol }}://{{ user.domain }}{% url 'password_reset' %}</a>)
+											</div>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td height="15">&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                          <td>
+                                            <div style="color: #717171; font-size: 15px; font-weight: 400; line-height: 22px; font-family: arial; text-align: left;">For any queries, please write to us on help@stageclip.com or call on 
+                                              <div><a href="tel:+49876543210" style="color: #717171; text-decoration: none;">+4(987)-654-3210.</a></div>
+                                            </div>
+                                          </td>
+                                        </tr>
+                                        <tr>
+                                          <td height="15">&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                          <td>
+                                            <div style="color: #717171; font-size: 15px; font-weight: 400; line-height: 22px; font-family: arial; text-align: left;">Thanks,<br>
+                                              The Stage Clip Team</div>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>  
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+                <tr bgcolor="#f9f9f9">
+                  <td height="20">&nbsp;</td>
+                </tr>
+                <tr bgcolor="#f9f9f9">
+                  <td height="20">&nbsp;</td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        
+      </tbody>
+    </table>
+  </body>
+{% endblock %}
+ {% endblock child%}
+{% endblock parent %}
+
+
+

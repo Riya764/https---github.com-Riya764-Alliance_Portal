@@ -1,0 +1,43 @@
+{% extends "admin/change_form.html" %} {{ form.media }} {% load i18n admin_static admin_modify %} {% block content %}
+
+<form method="post" name="importoffers" enctype="multipart/form-data" id="import_form">
+    {%csrf_token%}
+    <p style="width:100%; float:left;">
+        <a style="border-radius: 15px;padding: 3px 12px;font-weight: 400; font-size: 14px;color: #fff;background-color: #417690;}" href="sample_export_csv">Download Sample CSV </a>
+    </p><br/><br/><br/><br/>
+    <fieldset class="module aligned ">
+        {{form}}
+    </fieldset>
+    <div class="submit-row">
+        <input style="float:left" type="submit" value="Submit" class="default" name="_save" onclick="">
+    </div>
+</form>
+{% if error_list %} {% for error in error_list %}
+<p style="padding: 5px; border: 1px solid; background: #d64f4f; color: white; border-color: #ab2424; border-radius: 6px;">{{error}}</p>
+{% endfor %} {% endif %}
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+<script>
+    $('#import_form').submit(function(ev) {
+        ev.preventDefault();
+        $("div.errornote").remove();
+        import_file = $('#id_import_file').val()
+        if (!import_file) {
+            $("#id_import_file").after('<div class="errornote">Please upload a csv file.</div>');
+            return false;
+        }
+        var res = import_file.split(".");
+        if (res[1] == 'csv') {
+            this.submit();
+        } else {
+            $("#id_import_file").after('<div class="errornote">Please upload a valid csv file.</div>');
+            return false;
+        }
+    });
+</script>
+{% endblock %}{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="/admin/">Home</a> ›
+    <a href="/admin/offers/">Offers</a> ›
+    <a href="{{refaral_url}}">{{refaral_name}}</a>
+</div>
+{% endblock %}

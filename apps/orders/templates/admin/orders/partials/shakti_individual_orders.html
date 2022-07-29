@@ -1,0 +1,140 @@
+{% for order in shakti_individual_orders %}
+<main>
+    <table>
+        <tr>
+            <td>
+
+            </td>
+            <td>
+                <div id="invoice">
+                    <h1>INV-{{order.invoice_number}}</h1>
+                    <div class="date">Date of Invoice: {{ order.invoice_date|date:"M d, Y" }}</div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <table>
+                    <tr>
+                        <td><b>{{order.invoiced_from.name}}</b><br/>Phone No: {{order.invoiced_from.contact_number}}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {% if order.invoiced_from.address.address_line1 %} {{order.invoiced_from.address.address_line1}}, {% endif %} 
+							{% if order.invoiced_from.address.address_line2 %} {{order.invoiced_from.address.address_line2}}, {% endif %} 
+							{% if order.invoiced_from.address.address_line3  %} {{order.invoiced_from.address.address_line3}}, {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {% if order.invoiced_from.address.city %} {{order.invoiced_from.address.city}}, {% endif %} 
+							{% if order.invoiced_from.address.state %} {{order.invoiced_from.address.state.name}}, {% endif %} 
+							{% if order.invoiced_from.address.country.name %} {{order.invoiced_from.address.country.name}},
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {% if order.invoiced_from.address.post_code %} {{order.invoiced_from.address.post_code}} {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td>
+                <table>
+                    <tr>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>{{order.invoiced_to.code}} {{order.invoiced_to.name}}<br/>{{order.invoiced_to.contact_number}}</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {% if order.invoiced_to.address.address_line1 %} {{order.invoiced_to.address.address_line1}}, {% endif %} 
+							{% if order.invoiced_to.address.address_line2 %} {{order.invoiced_to.address.address_line2}}, {% endif %} 
+							{% if order.invoiced_to.address.address_line3 %} {{order.invoiced_to.address.address_line3}}, {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {% if order.invoiced_to.address.city %} {{order.invoiced_to.address.city}}, {% endif %} {% if order.invoiced_to.address.state %} {{order.invoiced_to.address.state.name}}, {% endif %} {% if order.invoiced_to.address.country.name %} {{order.invoiced_to.address.country.name}},
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {% if order.invoiced_to.address.post_code %} {{order.invoiced_to.address.post_code}}, {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    <br/><br/>
+    <table border="0" cellspacing="0" class="table" cellpadding="0">
+        <thead style="height: 10px; padding:0px; margin: 0px;">
+            <tr class="tr">
+                <th>Product Name</th>
+                <th>CLD Configuration</th>
+                <!-- <th>MRP </th>  --> 
+                <th>Cases</th>
+                <th>Units</th>
+                <th>Base Rate </th>
+                <th>Gross Rate </th>
+                <th>Discount </th>
+                <th>Distributor Discount </th>
+                <th>Taxable Amount </th>
+                <th>CGST (%)</th>
+                <th>CGST </th>
+                <th>SGST (%)</th>
+                <th>SGST </th>
+                <th>IGST (%)</th>
+                <th>IGST </th>
+                <th>Net Amount </th>
+            </tr>
+        </thead>
+        <tbody class="tbody">
+            <tr>
+                <td colspan="8"></td>
+            </tr>
+            {% for orderline in order.shaktiorderlines %}
+            <tr class="row{{order.index}}">
+                <td>{{orderline.product_name}}</td>
+                <td>{{orderline.cld_configuration}}</td>
+                 <!-- <td>{{orderline.product_mrp}}</td>  -->
+                <td>{{orderline.cases}}</td>
+                <td>{{orderline.units}}</td>
+                <td>{{orderline.unitprice}}</td>
+                <td>{{orderline.price}}</td>
+                <td>{{orderline.discount_amount}}</td>
+                <td>{{orderline.distributor_discount}}</td>
+                <td>{{orderline.price}}</td>
+                <td>{{orderline.cgstp}}</td>
+                <td>{{orderline.cgst}}</td>
+                <td>{{orderline.sgstp}}</td>
+                <td>{{orderline.sgst}}</td>
+                <td>{{orderline.igstp}}</td>
+                <td>{{orderline.igst}}</td>
+                <td>{{orderline.net_amount}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot class="tfoot">
+            <tr>
+                <td colspan="14"></td>
+                <td colspan="2">GRAND TOTAL</td>
+                <td>{{order.total_amount}}</td>
+            </tr>
+        </tfoot>
+    </table>
+</main>
+<div>
+    <pdf:nextpage />
+</div>
+{% endfor %}

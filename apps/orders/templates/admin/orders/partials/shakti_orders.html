@@ -1,0 +1,45 @@
+<main>
+    <center><h1><b><u>Cumulative Orders - Shakti level</u></b></h1></center>
+    <table border="0" cellspacing="0" class="table" cellpadding="0">
+      <thead style="height: 10px; padding:0px; margin: 0px;">
+        <tr class="tr">
+          <th>Shakti Enterpreneur</th>
+          <th>Shakti Enterpreneur Code</th>
+          <th>Total Quantity</th>
+          <th>Total Amount</th>
+        </tr>
+      </thead>
+      <tbody class="tbody">
+        <tr>
+          <td colspan="4"></td>
+        </tr>
+        {% for orderline in shakti_wise_orders %}
+        <tr class="row{{order.index}}">
+          <td>{{orderline.shakti_name}}</td>
+          <td>{{orderline.shakti_code}}</td>
+          <td>{{orderline.total_quantity}}</td>
+          <td>{{orderline.total_amount}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <!--<tfoot class="tfoot">
+        <tr>
+          <td colspan="8"></td>
+        </tr>
+        <tr>
+          <td colspan="8"></td>
+        </tr>
+        <tr>
+          <td colspan="8"></td>
+        </tr>
+        <tr>
+          <td colspan="8"></td>
+        </tr>
+        <tr>
+          <td colspan="6"></td>
+          <td colspan="2">GRAND TOTAL</td>
+          <td>{{order.total_amount}}</td>
+        </tr>
+      </tfoot>-->
+    </table>
+</main>

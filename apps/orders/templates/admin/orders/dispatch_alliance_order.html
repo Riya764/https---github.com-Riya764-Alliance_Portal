@@ -1,0 +1,186 @@
+{% extends "admin/base_site.html" %} {% load i18n l10n static %} {% load order_tags %} {% load admin_urls %} {% block
+branding %}
+<h1 id="site-name">{{site_title}}</h1>
+{% endblock %} {% block header %} {{ block.super }}
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+{% endblock %} {% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+  &rsaquo; <a href="{% url 'admin:orders_alliancepartnerorder_changelist' %}">Primary Orders</a>
+  &rsaquo; {% trans title %}
+</div>
+{% endblock %} {% block content %} {% if not alliance_order %}
+<p>N/A</p>
+<div class="btn-group">
+  <input type="button" class="btn-danger" value="Go back" onClick="javascript:location.href='{{ ref_url }}';" />
+</div>
+
+{% else %}
+<form action="" method="post" id="dispatch_order">
+  {% csrf_token %}
+
+  <p>The following item(s) will be dispatched:</p>
+
+  <div class="module">
+    <table width="100%">
+      <tr>
+        <td width="15%"><strong>Rural Distributor :</strong></td>
+        <td width="10%"><strong>{{alliance_order.distributor}}</strong></td>
+      </tr>
+      <tr>
+        <td width="15%"><strong>Distributor Code: </strong></td>
+        <td width="10%"><strong>{{distributor_code}}</strong></td>
+        <td colspan="3" width="75%"></td>
+      </tr>
+    </table>
+    <table id="result_list" width="100%">
+      <thead>
+        <tr>
+          <th scope="col" class="column-product_name">
+            <div class="text">Product Name</div>
+            <div class="clear"></div>
+          </th>
+          <th scope="col" class="column-unit_price">
+            <div class="text">Invoice Price (&#x20b9;)</div>
+            <div class="clear"></div>
+          </th>
+          <th scope="col" class="column-ordered_quantity">
+            <div class="text">Quantity Ordered</div>
+            <div class="clear"></div>
+          </th>
+          <th scope="col" class="column-dispatched_quantity">
+            <div class="text">Quantity Dispatched</div>
+            <div class="clear"></div>
+          </th>
+          <th scope="col" class="column-price">
+            <div class="text">Price (&#x20b9;)</div>
+            <div class="clear"></div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for orderline in orderlines %}
+        <tr class="row{{orderline.pk}}" data-item-id="{{orderline.pk}}">
+          <td class="nowrap product_name">{{orderline.product.basepack_name}}</td>
+          <td class="nowrap unitprice">{{orderline.unitprice}}</td>
+          <td class="nowrap quantity">{{orderline.quantity}}</td>
+          {% if party_packing %}
+          <td class="nowrap">{{orderline.quantity}}</td>
+          <input type="hidden" name="dispatch_quantity-{{orderline.pk}}" value="{{orderline.quantity}}" />
+          {% else %}
+          <td class="nowrap">
+            <input
+              type="number"
+              data-max="99999"
+              name="dispatch_quantity-{{orderline.pk}}"
+              value="{{orderline.quantity}}"
+              class="dispatch_quantity"
+            />
+          </td>
+          {% endif %}
+
+          <td class="nowrap price">{{orderline.price}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <table>
+      <tr class="row">
+        <td class="nowrap"><strong>Total Quantity:</strong></td>
+        <td class="nowrap" id="total_dispatch_quantity"><strong>{% total_quantity orderlines %}</strong></td>
+      </tr>
+      <tr>
+        <td class="nowrap"><strong>Total Amount:</strong></td>
+        <td class="nowrap" id="total_amount"><strong>&#x20b9; {{alliance_order.total_amount}}</strong></td>
+      </tr>
+    </table>
+  </div>
+  <div>
+    <div class="btn-group">
+      <input type="hidden" name="dispatch_order_submit" value="yes" id="id_dispatch_order_submit" />
+      <input type="button" class="btn-danger" value="Cancel" onClick="javascript:location.href='{{ ref_url }}';" />
+      <input type="button" onclick="javascript:confirmOrder();" value="{% trans 'Dispatch Order' %}" />
+    </div>
+  </div>
+</form>
+{% endif %} {% endblock %} {% block footer %} {{ block.super }}
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+<script>
+  function confirmOrder() {
+    if (!validate_form()) {
+      alert("Please enter correct dispatch quantity.");
+      return false;
+    }
+    if (confirm("Are you sure you want to dipatch this order? Order once dispatched will not be modified.")) {
+      document.getElementById("dispatch_order").submit();
+    }
+  }
+  if (!$) {
+    $ = django.jQuery();
+  }
+  $(document).ready(function () {
+    $(".dispatch_quantity").on("keydown", function () {
+      $(this).css({ border: "1px solid #ccc" });
+    });
+
+    $(".dispatch_quantity").on("keyup", function () {
+      var ordered_quantity = Number($(this).parent().prev().html());
+      var dispatch_quantity = Number($(this).val());
+      var row_id = $(this).parent().parent().attr("data-item-id");
+      var max_value = $(this).attr("data-max");
+
+      if (dispatch_quantity == "" || dispatch_quantity <= 0 || dispatch_quantity > Number(max_value)) {
+        $(this).css({ border: "1px solid #f00" });
+        return false;
+      }
+      var total_quantity = calculate_dispatch_quantity();
+      var price = update_product_price(row_id);
+      var total_price = calculate_total_price();
+      $("#total_dispatch_quantity").html("<strong>" + total_quantity + "</strong>");
+      $("#total_amount").html("<strong>&#x20b9; " + total_price + "</strong>");
+    });
+
+    $("form").on("submit", function () {
+      if (!validate_form()) {
+        return false;
+      }
+    });
+  });
+
+  function calculate_dispatch_quantity() {
+    var sum = 0;
+    $(".dispatch_quantity").each(function () {
+      sum += Number($(this).val());
+    });
+
+    return sum;
+  }
+
+  function update_product_price(row_id) {
+    var row = $(".row" + row_id);
+    var quantity = Number(row.find(".dispatch_quantity").val());
+    var unitprice = Number(row.find(".unitprice").html());
+    var price = quantity * unitprice;
+    row.find(".price").html(price.toFixed(4));
+  }
+
+  function calculate_total_price() {
+    var sum = 0;
+    $(".price").each(function () {
+      sum += Number($(this).html());
+    });
+
+    return sum.toFixed(4);
+  }
+  function validate_form() {
+    var ok = true;
+    $(".dispatch_quantity").each(function () {
+      var val = Number($(this).val());
+      if (val == "" || val <= 0 || val != parseInt(val, 10)) {
+        ok = false;
+      }
+    });
+    return ok;
+  }
+</script>
+{% endblock %}

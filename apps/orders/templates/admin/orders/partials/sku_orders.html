@@ -1,0 +1,84 @@
+<main>
+    <center><h1><b><u>Cumulative Orders - SKU level</u></b></h1></center>
+    <table border="0" cellspacing="0" class="table" cellpadding="0">
+      <thead style="height: 15px; padding:0px; margin: 0px;">
+        <tr>
+          <th>Product Name</th>
+          <th>Product Code</th>
+          <th>Size</th>
+          <!--<th>MRP </th>  -->
+          <th>TUR </th>
+          <th>Total Quantity</th>
+          <th>Total Amount </th>
+        </tr>
+      </thead>
+      <tbody class="tbody">
+        <tr>
+          <td colspan="7"></td>
+        </tr>
+        {% for orderline in sku_orders %}
+        <tr class="row{{order.index}}">
+          <td>{{orderline.product_name}}</td>
+          <td>{{orderline.product_code}}</td>
+          <td>{{orderline.product_size}}</td>
+          <!-- <td>{{orderline.product_mrp}}</td>  -->
+          <td>{{orderline.product_tur}}</td>
+          <td>{{orderline.total_quantity}}</td>
+          <td>{{orderline.total_amount}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot class="tfoot">
+        <tr>
+          <td colspan="7"></td>
+        </tr>
+        <tr>
+          <td colspan="5"></td>
+          <td colspan="1">GRAND TOTAL</td>
+          <td>{{gross_amount}}</td>
+        </tr>
+      </tfoot>
+    </table>
+</main>
+<main>
+    <center><h1><b><u>Cumulative Orders - SKU level</u></b></h1></center>
+    <table border="0" cellspacing="0" class="table" cellpadding="0">
+      <thead style="height: 15px; padding:0px; margin: 0px;">
+        <tr>
+          <th>Product Name</th>
+          <th>Product Code</th>
+          <th>Size</th>
+          <!--  <th>MRP </th> -->
+          <th>TUR </th>
+          <th>Total Quantity</th>
+          <th>Total Amount </th>
+        </tr>
+      </thead>
+      <tbody class="tbody">
+        <tr>
+          <td colspan="7"></td>
+        </tr>
+        {% for orderline in sku_orders %}
+        <tr class="row{{order.index}}">
+          <td>{{orderline.product_name}}</td>
+          <td>{{orderline.product_code}}</td>
+          <td>{{orderline.product_size}}</td>
+           <!-- <td>{{orderline.product_mrp}}</td>  -->
+          <td>{{orderline.product_tur}}</td>
+          <td>{{orderline.total_quantity}}</td>
+          <td>{{orderline.total_amount}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot class="tfoot">
+        <tr>
+          <td colspan="7"></td>
+        </tr>
+        <tr>
+          <td colspan="5"></td>
+          <td colspan="1">GRAND TOTAL</td>
+          <td>{{gross_amount}}</td>
+        </tr>
+      </tfoot>
+    </table>
+</main>

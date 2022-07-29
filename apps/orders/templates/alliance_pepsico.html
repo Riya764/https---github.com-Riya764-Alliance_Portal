@@ -1,0 +1,262 @@
+{% load i18n l10n %} {% load static %} {% load pdf_filters %}
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>{{site_title}} - {{title}}</title>
+    <style>
+        /* p {text-align: center;} */
+        div {
+            text-align: center;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        h3 {
+            text-align: center;
+        }
+
+        @page {
+            size: letter landscape;
+            margin: 1cm;
+        }
+
+        .table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .invoice-table {
+            font-size: 12px;
+        }
+
+        .invoice-table-cell {
+            border: 0px solid black;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    {% regroup order_details|dictsort:"invoice_number_alliance" by invoice_number_alliance as invoice_list %} {% for
+    orders in invoice_list %}
+    <header>
+        <title>{{site_title}} - {{title}}</title>
+    </header>
+
+    <div>
+        <h1>PepsiCo India Holdings Pvt Ltd</h1>
+        <p>
+            Kanpur WH - UP (Frito - Lay Division) Plot No.8, Uptron Estate , Panki Industrial Area,<br />
+            <b>KANPUR - 208022 </b> <br />
+            <b> GSTIN : </b>09AAACP1272G2ZK <b> PAN No. :</b> AAACP1272G <br />
+            Regd Office:PepsiCo India Holdings Pvt Ltd Fritolay DivisionLevel 3-5, Pioneer Square Sector 62, Near Golf
+            Course Ext Rd Gurugram Haryana-122101, (India)<br />
+            <b>Telephone : </b> 91-124-7190000 <b>Email: </b> <b> Website: </b> www.pepsicoindia.co.in <br />
+            <b> TAX INVOICE</b>
+        </p>
+    </div>
+    <table>
+        <tr>
+            <td><b>Buyer/ Bill to Party </b></td>
+            <td><b> Ship to Party</b></td>
+            <td><b> Consignor</b></td>
+        </tr>
+        <tr>
+            <td>{{invoiced_to.name }}</td>
+            <td>{{invoiced_to.name}}</td>
+            <td>Tax Invoice No. : {{orders.grouper|default:''}}</td>
+        </tr>
+        <tr>
+            <td>
+                {% if invoiced_to.address.address_line1 %} {{invoiced_to.address.address_line1}}, {% endif %}
+                {% if invoiced_to.address.address_line2 %} {{invoiced_to.address.address_line2}}, {% endif %} {% if
+          invoiced_to.address.address_line3 %} {{invoiced_to.address.address_line3}}, {% endif %}
+            </td>
+            <td>
+                {% if invoiced_to.address.address_line1 %} {{invoiced_to.address.address_line1}}, {% endif %} {% if
+          invoiced_to.address.address_line2 %} {{invoiced_to.address.address_line2}}, {% endif %} {% if
+          invoiced_to.address.address_line3 %} {{invoiced_to.address.address_line3}}, {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                {% if invoiced_to.address.city %} {{invoiced_to.address.city}}, {% endif %}
+                {% if invoiced_to.address.state %}
+                {{invoiced_to.address.state.name}}, {% endif %} {% if invoiced_to.address.country.name %}
+                {{invoiced_to.address.country.name}}, {% endif %} {{invoiced_to.address.post_code}}
+            </td>
+            <td>
+                {% if invoiced_to.address.city %} {{invoiced_to.address.city}}, {% endif %}
+                {% if invoiced_to.address.state %}
+                {{invoiced_to.address.state.name}}, {% endif %} {% if invoiced_to.address.country.name %}
+                {{invoiced_to.address.country.name}}, {% endif %} {{invoiced_to.address.post_code}}
+            </td>
+            <td>Tax Invoice Date : {{ orders.list.0.dispatched_on|date:"M d, Y" }}</td>
+        </tr>
+        <tr>
+            <td>GSTIN No : {{invoiced_to.gst_code}}</td>
+
+            <td>State Code/ POS: {{invoiced_to.address.state}}</td>
+        </tr>
+    </table>
+
+    <br />
+
+    <table border="1" cellspacing="1" class="table" cellpadding="7px" height="8px">
+        <thead>
+            <tr>
+                <th style="width: 15%">Item Description</th>
+                <th style="width: 4%">Item Code</th>
+                <th style="width: 5%">HSN</th>
+                <th style="width: 10%">Batch No - Prod. Date</th>
+                <th style="width: 5%">MRP</th>
+                <th style="width: 8%">Qty Cld Cld-Confg</th>
+                <th style="width: 5%">Base Price/cld</th>
+                <th style="width: 5%">Total Amt(Base Price)</th>
+                <th style="width: 5%">Disc.(Rs)</th>
+                <th style="width: 8%">Stales Disc. Route</th>
+                <th style="width: 5%">Taxable Amount</th>
+                <th style="width: 5%">Rate</th>
+                <th style="width: 7%">CT Tax/CGST Amt</th>
+                <th style="width: 5%">Rate</th>
+                <th style="width: 5%">ST Tax/SGST Amt</th>
+                <th style="width: 5%">Total Amt (incl. tax)</th>
+            </tr>
+        </thead>
+
+        {% if not orders %}
+        <p>No Products</p>
+        {% else %}
+        <tbody class="tbody">
+            {% for order in orders.list %}
+            <tr class="row{{orderline.index}}">
+                <td>{{order.product.basepack_name}}</td>
+                <td>{{order.product.basepack_code}}</td>
+                <td>{{order.product.hsn_code}}</td>
+                <td>{{order.batch_code}} - {{order.prod_date}}</td>
+                <td>{{order.mrp}}</td>
+                <td>{{order.cases}} CAS {{order.product.cld_configurations}}</td>
+                <td>{{order.base_price_par_unit}}</td>
+                <td>{{order.price}}</td>
+                <td>{{order.sch_discount}}</td>
+                <td>{{order.add_discount}}</td>
+                <td>{{order.tax_amount}}</td>
+                <td>{{order.product.cgst}}</td>
+                <td>{{order.cgst_amount}}</td>
+                <td>{{order.product.sgst}}</td>
+                <td>{{order.sgst_amount}}</td>
+                <td>{{order.net_amount}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tr>
+            <th colspan="1">Grand total</th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th>{{ orders.list|sum_invoice:"sch_discount"}}</th>
+            <th>{{ orders.list|sum_invoice:"add_discount"}}</th>
+            <th>{{orders.list|sum_invoice:"tax_amount"}}</th>
+            <th></th>
+            <th>{{orders.list|sum_invoice:"cgst_amount"}}</th>
+            <th></th>
+            <th>{{orders.list|sum_invoice:"sgst_amount"}}</th>
+            <th>{{orders.list|sum_invoice:"net_amount"}}</th>
+        </tr>
+        {% endif %}
+    </table>
+    <br />
+    <br />
+    <table border="0" cellspacing="0" class="table" cellpadding="0">
+        <thead style="height: 15px; padding: 0px; margin: 0px">
+            <tr class="tr">
+                <th>HSN Code</th>
+                <th>CGST %</th>
+                <th>CGST Amt</th>
+                <th>SGST %</th>
+                <th>SGST Amt</th>
+                <th>IGST %</th>
+                <th>IGST Amt</th>
+            </tr>
+        </thead>
+
+        {% if not order_details %}
+        <p>No Products</p>
+        {% else %}
+        <tbody class="tbody">
+            <tr>
+                <td colspan="8"></td>
+            </tr>
+            <tr class="row{{orderline.index}}">
+                <td>210690</td>
+                <td>6.00</td>
+                <td>{{order.cgst_total}}</td>
+                <td>6.00</td>
+                <td>{{order.cgst_total}}</td>
+                <td>0.00</td>
+                <td>0.00</td>
+            </tr>
+        </tbody>
+        <tfoot class="tfoot">
+            <tr>
+                <td colspan="11"></td>
+            </tr>
+
+            {% endif %}
+        </tfoot>
+
+        <table class="invoice-table" cellspacing="1" cellpadding="5px">
+            <tr>
+                <td colspan="11"></td>
+            </tr>
+
+            <tr>
+                <td colspan="8"></td>
+                <th colspan="3" class="invoice-table-cell">Less Discount</th>
+                <td colspan="0" class="invoice-table-cell">{{ orders.list|sum_invoice:"sch_discount"}}</td>
+            </tr>
+            <tr>
+                <td colspan="8"></td>
+                <th colspan="3" class="invoice-table-cell">Less Stales Discount :</th>
+                <td colspan="0" class="invoice-table-cell">{{ orders.list|sum_invoice:"add_discount"}}</td>
+            </tr>
+            <tr>
+                <td colspan="8"></td>
+                <th colspan="3" class="invoice-table-cell">Taxable Amount</th>
+                <td colspan="0" class="invoice-table-cell">{{orders.list|sum_invoice:"tax_amount"}}</td>
+            </tr>
+            <tr>
+                <td colspan="8"></td>
+                <th colspan="3" class="invoice-table-cell">Add Central Tax</th>
+                <td colspan="0" class="invoice-table-cell">{{orders.list|sum_invoice:"cgst_amount"}}</td>
+            </tr>
+            <tr>
+                <td colspan="8"></td>
+                <th colspan="3" class="invoice-table-cell">Add State Tax</th>
+                <td colspan="0" class="invoice-table-cell">{{orders.list|sum_invoice:"sgst_amount"}}</td>
+            </tr>
+            <tr>
+                <td colspan="8"></td>
+                <th colspan="3" class="invoice-table-cell">Add TCS 0.1%</th>
+                <td colspan="0" class="invoice-table-cell">{{ orders.list|sum_invoice:"net_amount"|calculate_tcs }}</td>
+            </tr>
+            <tr>
+                <td colspan="8"></td>
+                <th colspan="3" class="invoice-table-cell">Total Tax Invoice</th>
+                <td colspan="0" class="invoice-table-cell">{{ orders.list|pescio_final_amount:"net_amount" }}</td>
+            </tr>
+        </table>
+    </table>
+    <hr />
+    <p style="page-break-before: always">{% endfor %}</p>
+</body>
+
+</html>

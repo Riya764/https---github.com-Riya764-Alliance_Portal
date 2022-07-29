@@ -1,0 +1,38 @@
+{% load staticfiles %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+</head>
+
+<body style="margin:0; padding:0;">
+<table width="600" border="0" cellspacing="0" cellpadding="0" align="left">
+  <tr>
+    <td><table width="520" border="0" cellspacing="0" cellpadding="0" align="center">
+        <tr>
+          <td height="40"></td>
+        </tr>
+        <tr>
+          <td style="color: #323232; font-family: Calibri; font-size: 17px;">Dear {{name}},</td>
+        </tr>
+        <tr>
+          <td height="17"></td>
+        </tr>
+        <tr>
+          <td style="color: #323232; font-family: Calibri; font-size: 17px;">We want to inform you that an Order {{order_id}} for the value &#x20b9; {{total_amount}} has been placed on {{order_date}}.</td>
+        </tr>
+        <tr>
+          <td height="33"></td>
+        </tr>
+        <tr>
+          <td style="color: #323232; font-family: Calibri; font-size: 17px;">Thanks,</td>
+        </tr>
+        <tr>
+          <td style="color: #323232; font-family: Calibri; font-size: 17px;">Team HUL</td>
+        </tr>
+      </table></td>
+  </tr>
+</table>
+</body>
+</html>

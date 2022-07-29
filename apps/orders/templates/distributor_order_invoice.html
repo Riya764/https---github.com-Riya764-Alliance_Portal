@@ -1,0 +1,365 @@
+{% load i18n l10n %} {% load static %} {% load pdf_filters order_tags %}
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>{{site_title}} - {{title}}</title>
+    <!-- <link rel="stylesheet" type="text/css" href="{% static 'invoice/style.css' %}"> -->
+</head>
+<style>
+    @font-face {
+        font-family: SourceSansPro;
+        src: url({% static 'invoice/SourceSansPro-Regular.ttf' %});
+    }
+    
+    .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    
+    .clearfix:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+    
+    a {
+        color: #777777;
+        text-decoration: none;
+    }
+    
+   
+    
+    header {
+        padding: 10px 0;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #AAAAAA;
+    }
+    
+    #logo {
+        float: left;
+        margin-top: 8px;
+    }
+    
+    #logo .img {
+        height: 120px;
+    }
+    
+    #company {
+        float: right;
+        text-align: right;
+    }
+    
+    #details {
+        margin-bottom: 50px;
+    }
+    
+    #client {
+        padding-left: 6px;
+        border-left: 6px solid #777777;
+        float: left;
+    }
+    
+    #client .to {
+        color: #777777;
+    }
+    
+    h2.name {
+        font-size: 1.4em;
+        font-weight: normal;
+        margin: 0;
+    }
+    
+    #invoice {
+        float: right;
+        text-align: right;
+    }
+    
+    #invoice h1 {
+        color: #777777;
+        font-size: 2.4em;
+        line-height: 1em;
+        font-weight: normal;
+        margin: 0 0 10px 0;
+    }
+    
+    #invoice .date {
+        font-size: 1.1em;
+        color: #777777;
+    }
+    
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        border-spacing: 0;
+        margin-bottom: 20px;
+    }
+    
+    .table .th,
+    .table .td {
+        padding: 20px;
+        background: #EEEEEE;
+        text-align: center;
+        border-bottom: 1px solid #FFFFFF;
+    }
+    
+    .table th {
+        white-space: nowrap;
+        font-weight: 900;
+        border-bottom: 1px solid black;
+    }
+    
+    .table .th {
+        white-space: nowrap;
+        font-weight: normal;
+    }
+    
+    .table .td {
+        text-align: right;
+    }
+    
+    .table .td h3 {
+        color: #777777;
+        font-size: 1.2em;
+        font-weight: normal;
+        margin: 0 0 0.2em 0;
+    }
+    
+    .no {
+        color: #777777;
+        font-size: 1.6em;
+        background: #777777;
+    }
+    
+    .desc {
+        text-align: left;
+    }
+    
+    .table .unit {
+        background: #777777;
+    }
+    
+    .qty {}
+    
+    .total {
+        background: #777777;
+        color: #777777;
+    }
+    
+    .table .td.unit,
+    .table .td.qty,
+    .table .td.total {
+        font-size: 1.2em;
+    }
+    
+    .table .tbody .tr:last-child td {
+        border: none;
+    }
+    
+    .table .tfoot .td {
+        padding: 10px 20px;
+        background: #FFFFFF;
+        border-bottom: none;
+        font-size: 1.2em;
+        white-space: nowrap;
+        border-top: 1px solid #AAAAAA;
+    }
+    
+    .table .tfoot .tr:first-child .td {
+        border-top: none;
+    }
+    
+    .table .tfoot .tr:last-child .td {
+        color: #777777;
+        font-size: 1.4em;
+        border-top: 1px solid #777777;
+    }
+    
+    .table .tfoot .tr .td:first-child {
+        border: none;
+    }
+    
+    #thanks {
+        font-size: 2em;
+        margin-bottom: 50px;
+    }
+    
+    #notices {
+        padding-left: 6px;
+        border-left: 6px solid #777777;
+    }
+    
+    #notices .notice {
+        font-size: 1.2em;
+    }
+    
+    .footer {
+        color: #777777;
+        width: 100%;
+        height: 30px;
+        position: absolute;
+        bottom: 0;
+        border-top: 1px solid #AAAAAA;
+        padding: 8px 0;
+        text-align: center;
+    }
+    
+    @page {
+        size: letter landscape;
+        margin: 1cm;
+    }
+</style>
+
+<body>
+    <main>
+        <table>
+            <tr>
+                <td>
+                    <div id="logo">
+                        {% if logo %}
+                        <img class="img" style="width:180px;" src="{{logo | get64 }}"> {% endif %}
+                    </div>
+                </td>
+                <td>
+                    <div id="invoice">
+                        <h1>INV-{{order.invoice_number}}</h1>
+                        <div class="date">Date of Invoice: {{ order.modified|date:"M d, Y" }}</div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <table>
+                        <tr>
+                            <td>{{invoiced_to.code}} {{invoiced_to.name}}<br/>{{invoiced_to.contact_number}}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                {% if invoiced_to.address.address_line1 %} {{invoiced_to.address.address_line1}}, {% endif %} {% if invoiced_to.address.address_line2 %} {{invoiced_to.address.address_line2}}, {% endif %} {% if invoiced_to.address.address_line3 %} {{invoiced_to.address.address_line3}},
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                {% if invoiced_to.address.city %} {{invoiced_to.address.city}}, {% endif %} {% if invoiced_to.address.state %} {{invoiced_to.address.state.name}}, {% endif %} {% if invoiced_to.address.country.name %} {{invoiced_to.address.country.name}}, {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>{{invoiced_to.address.post_code}}</td>
+                        </tr>
+                    </table>
+                </td>
+                <td>
+                    <table>
+                        <tr>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>{{invoiced_from.name}}<br/>{{invoiced_from.contact_number}}</td>
+                        </tr>
+                        <tr>
+                            <td>GST Code : {{invoiced_from.gst_code}}</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                {% if invoiced_from.address.address_line1 %} {{invoiced_from.address.address_line1}}, {% endif %} {% if invoiced_from.address.address_line2 %} {{invoiced_from.address.address_line2}}, {% endif %} {% if invoiced_from.address.address_line3 %} {{invoiced_from.address.address_line3}},
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                {% if invoiced_from.address.city %} {{invoiced_from.address.city}}, {% endif %} {% if invoiced_from.address.state %}, {{invoiced_from.address.state.name}}, {% endif %} {% if invoiced_from.address.country.name %} {{invoiced_from.address.country.name}},
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>{{invoiced_from.address.post_code}}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <br/><br/>
+        <table border="0" cellspacing="0" class="table" cellpadding="0">
+            <!-- <thead style="height: 10px; padding:0px; margin: 0px;"> -->
+                <tr class="tr">
+                    <th colspan="3"></th>
+                    <th colspan="2">Quantity</th>
+                    <th colspan="12"></th>
+                </tr>
+                <tr class="tr">
+                    <th>Product Name</th>
+                    <th>HSN Code</th>
+                    <th>CLD Configuration</th>
+                    <th>MRP </th>
+                    <th>Cases</th>
+                    <th>Units</th>
+
+                    <th>Base Rate </th>
+                    <th>Gross Amount </th>
+                    <th>Discount </th>
+                    <th>Distributor Discount </th>
+                    <th>Taxable Amount </th>
+                    <th>CGST (%)</th>
+                    <th>CGST Amount </th>
+                    <th>SGST (%)</th>
+                    <th>SGST Amount </th>
+                    <th>IGST (%)</th>
+                    <th>IGST Amount </th>
+                    <th>Net Amount </th>
+                </tr>
+            </thead>
+            {% if not order_details %}
+            <p>No Products</p>
+            {% else %}
+            <tbody class="tbody">
+                <tr>
+                    <td colspan="10"></td>
+                </tr>
+                {% for order in order_details %}
+                <tr class="row{{orderline.index}}">
+                    <td>{{order.product.basepack_name}}</td>
+                    <td>{{order.product.hsn_code}}</td>
+                    <td>{{order.product.cld_configurations}}</td>
+                    <td>{{order.product.mrp}}</td>
+                    <td>{{order.cases}}</td>
+                    <td>{{order.units}}</td>
+
+                    <td>{{order.unitprice}}</td>
+                    <td>{{order.price}}</td>
+                    <td>{{order.discount_amount}}</td>
+                    <td>{{order.distributor_discount}}</td>
+                    <td>{{order.taxable_amount}}</td>
+                    <td>{{order.product.cgst}}</td>
+                    <td>{{order.cgst}}</td>
+                    <td>{{order.product.sgst}}</td>
+                    <td>{{order.sgst}}</td>
+                    <td>{{order.product.igst}}</td>
+                    <td>{{order.igst}}</td>
+                    <td>{{order.net_amount}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            {% endif %}
+            <tfoot class="tfoot">
+                <tr>
+                    <td colspan="10"></td>
+                </tr>
+
+                <tr>
+                    <td colspan="13"></td>
+                    <td colspan="3">GRAND TOTAL</td>
+                    <td>{{order.total_amount}}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </main>
+</body>
+
+</html>

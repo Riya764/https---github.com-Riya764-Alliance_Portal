@@ -1,0 +1,269 @@
+{% extends "admin/change_form.html" %} {{ form.media }}
+{% load i18n admin_static admin_modify order_tags static %} {% block content %}
+
+<div id="content-main">
+    <div class="module filtered" id="changelist">
+        <fieldset class="module aligned cols-2">
+            <form method="GET" class="post-form" id="advanced_search">
+                {{ form.as_p }}
+                <div class="submit-row">
+                    <div class="float-left">
+                        <input type="button" value="Clear" class="reset" style="float: left;"
+                            name="_reset" />
+                        <input type="submit" class="default" name="_search" value="Search" />
+                    </div>
+
+                    <div class="float-right">
+                        <a href="download-csv/?{{ request.GET.urlencode }}" {% if not data %}
+                            onclick="return false;" {% endif %} class="default">&nbsp;Download
+                            Record(s)</a>
+                    </div>
+                </div>
+            </form>
+        </fieldset>
+        <form id="changelist-form" novalidate="">
+            <div class="results">
+                <table id="result_list">
+                    <thead>
+                        <tr>
+                            <th colspan="5">Sales</th>
+                        </tr>
+                        <tr>
+                            <th scope="col" class="sortable column-payment_status secondary">
+                                <div class="text"><span>RS</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="sortable column-payment_status secondary">
+                                <div class="text"><span>MoC</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>Ordered Total Cost</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>Dispatched Total Count</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>Grand Total</span></div>
+                                <div class="clear"></div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in data %}
+                        <tr class="row1">
+
+                            <td class="field-created nowrap secondary">
+                                {% if record.distributor__name != None %}
+                                {{record.distributor__name}} {% endif %}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {{record.moc_name}}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {{record.ordered|round_to_2}}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {{record.dispatched|round_to_2}}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {{record.grandtotal|round_to_2}}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">No Record Found</td>
+                        </tr>
+                        {% endfor %} {% if data %}
+                        <tr class="row1">
+
+                            <td class="field-created nowrap secondary">
+                                <b>Grand Total</b>
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                <b></b>
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                <b>{{ordered_total_cost|round_to_2}}</b>
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                <b> {{dispatched_total_cost|round_to_2}}</b>
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                <b> {{total_grandtotal|round_to_2}}</b>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td colspan="4"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+            <div class="results">
+                <table id="result_list">
+                    <thead>
+                        <tr>
+                            <th colspan="5">Eco</th>
+                        </tr>
+                        <tr>
+                            <th scope="col" class="sortable column-payment_status secondary">
+                                <div class="text"><span>Shakti Enterpreneur</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="sortable column-payment_status secondary">
+                                <div class="text"><span>RS</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="sortable column-payment_status secondary">
+                                <div class="text"><span>MoC</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>Ordered </span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>Dispatched </span></div>
+                                <div class="clear"></div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in eco_data %}
+                        <tr class="row1">
+                            <td class="field-created nowrap secondary">
+                                {% if record.shakti_enterpreneur__shakti_user__code != None %}
+                                {{record.shakti_enterpreneur__shakti_user__code}} {% endif %}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {% if record.distributor__name != None %}
+                                {{record.distributor__name}} {% endif %}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {{record.moc_name}}
+                            </td>
+
+                            <td class="field-created nowrap secondary">
+                                {{record.ordered}}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {{record.dispatched}}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">No Record Found</td>
+                        </tr>
+                        {% endfor %} {% if data %}
+                        <tr class="row1">
+
+                            <td class="field-created nowrap secondary">
+                                <b>Grand Total</b>
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                <b></b>
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                <b></b>
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                <b>{{ordered_shkti}}</b>
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                <b> {{dispatched_shkti}}</b>
+                            </td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td class="field-created nowrap secondary">
+                                <b>Unique Eco Total</b>
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                <b></b>
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                <b></b>
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                <b> {{eco_count}}</b>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+
+        </form>
+    </div>
+</div>
+<style>
+    .timezonewarning {
+        display: none;
+    }
+
+    ul li {
+        list-style-type: none;
+    }
+
+    td,
+    th {
+        padding: 8px 20px;
+    }
+</style>
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'admin/js/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/core.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/calendar.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/admin/DateTimeShortcuts.js' %}"></script>
+<script type="text/javascript">
+    (function ($) {
+
+        $(".reset").click(function () {
+            $(this).closest('form').find(".clear").val("");
+            //$(this).closest('form')[0].reset();
+        });
+
+
+        /*		$('#advanced_search').submit(function (ev) {
+        			ev.preventDefault();
+        			$("div.errornote").remove();
+        			if (amount_validation() & date_validation()) {
+        				this.submit();
+        			}
+        		});
+        */
+
+
+        function date_validation() {
+            start_date = $('#id_start_date').val();
+            end_date = $('#id_end_date').val();
+
+            if (start_date && end_date) {
+                if (end_date < start_date) {
+                    $("#content-main").prepend('<div class="errornote">End date should not be less than start date.</div>');
+                    $('html,body').animate({
+                        scrollTop: 0
+                    });
+                    return false;
+                }
+
+            }
+            return true;
+        }
+
+    })(django.jQuery);
+</script>
+{% endblock %}

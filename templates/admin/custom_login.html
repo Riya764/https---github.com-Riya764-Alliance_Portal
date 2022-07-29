@@ -1,0 +1,19 @@
+{% extends "admin/login.html" %}
+{% load i18n admin_static %}
+
+{% block content %}
+{{ block.super }}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script type="text/javascript">
+	var anchor = $('#login-form').find("a");
+	anchor.html("<div style=\"float:left;\">Forgot password? <br/> <br/></div>");
+</script>
+{% endblock %}
+
+{% block branding %}
+<h4 id="site-name" style="color: #fff;background-color: transparent; line-height: 1.42857; !important;\">{% trans 'Hindustan Unilever Portal' %}</h4>
+{% endblock %}
+
+{% block password-reset-link %}
+<a href="/admin/password_reset/">{% trans 'Forgotten your password?' %}</a>
+{% endblock %}

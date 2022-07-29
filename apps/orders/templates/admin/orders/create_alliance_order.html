@@ -1,0 +1,267 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n static %}
+
+{% block branding %}
+    <h1 id="site-name">{{site_title}}</h1>
+{% endblock %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+        &rsaquo; <a href="/admin/orders">Orders</a>
+        &rsaquo; <a href="{% url 'admin:orders_distributororder_changelist' %}">Secondary Orders</a>
+        &rsaquo; {% trans title %}
+    </div>
+{% endblock %}
+
+{% block content %}
+    {% if not alliance_orders %}
+        <p>No Pending order(s)</p>
+        <div class="btn-group">
+            <input type="button" class="btn-danger" value="Go back" onClick="javascript:history.go(-1);" />
+        </div>
+        
+    {% else %}
+        <form action="" method="post" id="changelist">
+        {% csrf_token %}
+
+            <ul class='messagelist'>
+                <li class="warning">
+                    Maximum value for Uplift can be {{max_uplift}}.                   
+                </li>
+            </ul>
+            <p>The following order(s) will be placed:</p>
+
+            {% for order in alliance_orders %}
+                <div class="module">
+                    <table width="100%">
+                        <tr>
+                            <td width="15%"><strong>Alliance Partner :</strong></td>
+                            <td width="10%"><strong>{{order.allianceorderlines.0.brand}}</strong></td>
+                            <td width="50%"></td>
+                            <td width="15%"><strong>Rural Distributor :</strong></td>
+                            <td width="10%"><strong>{{order.distributor_name}}</strong></td>
+                        </tr>
+                        <tr>
+                            <td width="15%"><strong>Distributor Code: </strong></td>
+                            <td width="10%"><strong>{{order.distributor_code}}</strong></td>
+                            <td colspan="3" width="75%"></td>
+                        </tr>
+                    </table>
+                    <table id="result_list" width="100%">
+                        <thead>
+                        <tr>
+                            <th scope="col" class="column-distributor">
+                                <div class="text">Product Name</div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class=" column-sales_promoter">
+                                <div class="text">Invoice Price (&#x20b9;)</div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class=" column-shakti_enterpreneur">
+                                <div class="text">Quantity</div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class=" column-suggested">
+                                <div class="text">Suggested Quantity</div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class=" column-uplift">
+                                <div class="text">Uplift Factor</div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class=" column-final">
+                                <div class="text">Final Quantity</div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class=" column-price">
+                                <div class="text">Price (&#x20b9;)</div>
+                                <div class="clear"></div>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        
+                        {% for orderline in order.allianceorderlines %}
+                        <tr class="row{{orderline.distributor_order_detail}}" data-item-id="{{orderline.distributor_order_detail}}">
+                            <td class="nowrap">{{orderline.product_name}}</td>
+                            <td class="nowrap unit-price">{{orderline.unitprice}}</td>
+                            <td class="nowrap quantity">{{orderline.quantity}}</td>
+                            <td class="nowrap suggested-stock">{{orderline.suggested_stock}}</td>
+                            <td class="nowrap uplift"><input type="number" data-max="{{max_uplift}}" value="{{orderline.uplift}}" /></td>
+                            <td class="nowrap final-stock">
+                                <input type="number" data-max="{{max_final_quantity}}" name="final_stock_{{orderline.distributor_order_detail}}_{{orderline.product}}" value="{{orderline.final_stock}}" /></td>
+                            <td class="nowrap price">{{orderline.price}}</td>
+                            <input type="hidden" class="rtp-stock" value="{{orderline.rtp_stock}}" />
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    <table>
+                        <tr class="row">
+                            <td class="nowrap"><strong>Total Quantity:</strong></td>
+                            <td class="nowrap total_quantity"><strong>{{order.quantity}}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="nowrap"><strong>Total Amount:</strong></td>
+                            <td class="nowrap total_amount"><strong>&#x20b9; {{order.total_amount}}</strong></td>
+                        </tr>
+                    </table>
+                </div>
+            {% endfor %}
+            <div>
+            
+            <div class="btn-group">
+            {% for obj in queryset %}
+            <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />
+            {% endfor %}
+            <input type="hidden" name="action" value="create_alliance_order" />
+            <input type="hidden" name="alliance_order_submit" value="yes" id="id_alliance_order_submit" />
+            <input type="button" class="btn-danger" value="Cancel" onClick="javascript:history.go(-1);" />
+            <input type="button" onclick="javascript:confirmOrder();" value="{% trans 'Place Order' %}" />
+            </div>
+            </div>
+        </form>
+    {% endif %}
+
+{% endblock %}
+
+{% block footer %} {{ block.super }}
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+<!--<script type="text/javascript" src="{% static 'admin/orders/js/order_management.js' %}"></script>-->
+<script>
+function confirmOrder() {
+    if (!validate_form()) {
+        alert("Please enter correct uplift/final quantity.");
+        return false;
+    }
+    if (confirm("Are you sure you want to place the order? Order once placed will not be modified.")) {
+        document.getElementById("changelist").submit();
+    }  
+    
+}
+
+if (!$) {
+    $ = django.jQuery();
+}
+$(document).ready(function(){
+    $('.uplift input').on('keydown', function() {
+        $(this).css({'border':'1px solid #ccc'});
+    });
+    
+    $('.uplift input').on('keyup', function() {
+        var uplift = $(this).val();
+        var row_id = $(this).parent().parent().attr('data-item-id');
+        var max_value = $(this).attr('data-max');
+       
+        if (uplift == '' || Number(uplift) > Number(max_value)) {
+            var span = $('<span/>', {
+                        class: 'float-left clear red',
+                        text: 'Max value can be' + max_value 
+                    });
+            //$(this).parent().append(span);
+            $(this).css({'border':'1px solid #f00'});
+            return false;
+        }
+        var parent_tr = $(this).parent().parent();
+        var quantity = parent_tr.find('.quantity').html();
+        var suggested_stock = parent_tr.find('.suggested-stock').html();
+        
+        var rtp_stock = parent_tr.find('.rtp-stock').val();
+        var final_stock = calculate_final_stock(Number(quantity), Number(rtp_stock), Number(uplift), Number(suggested_stock));
+        
+        if (final_stock != NaN) {
+            parent_tr.find('.final-stock input').val(final_stock);
+            update_product_price(row_id);
+        }
+        
+        var total_price = calculate_total_price();
+        var total_quantity = calculate_total_quantity();
+        
+        $('.total_quantity').html('<strong>'+total_quantity+'</strong>');
+        $('.total_amount').html('<strong>&#x20b9; '+total_price+'</strong>');
+    });
+
+    $('.final-stock input').on('keyup', function() {
+        var final_qty = $(this).val();
+        var max_value = $(this).attr('data-max');
+       
+        if (final_qty == '' || final_qty <= 0) {
+            $(this).css({'border':'1px solid #f00'});
+            return false;
+        }
+        var row_id = $(this).parent().parent().attr('data-item-id');
+        update_product_price(row_id);
+        var total_price = calculate_total_price();
+        var total_quantity = calculate_total_quantity();
+        
+        $('.total_quantity').html('<strong>'+total_quantity+'</strong>');
+        $('.total_amount').html('<strong>&#x20b9; '+total_price+'</strong>');
+    });
+
+    $('form').on('submit', function() {
+        $('.uplift input, .final-stock input').css({'border':'1px solid #ccc'});
+        if (!validate_form()) {
+            return false;
+        }
+    })
+
+});
+
+function calculate_final_stock(quantity, rtp_stock, uplift, suggested_stock) {
+    var final_quantity =  (((quantity + rtp_stock)/2) * uplift) + suggested_stock
+    return Math.round(final_quantity)
+}
+        
+function update_product_price(row_id) {
+    var row = $(".row"+row_id);
+    var quantity = Number(row.find('.final-stock input').val());
+    var unitprice = Number(row.find('.unit-price').html());
+    var price = quantity * unitprice;
+    row.find('.price').html(price.toFixed(2));
+    
+}
+
+function calculate_total_price() {
+    var sum = 0;
+    $('.price').each(function() {
+        sum += Number($(this).html());
+    });
+
+    return sum.toFixed(2);
+}
+
+function calculate_total_quantity() {
+    var sum = 0;
+    $('.final-stock input').each(function() {
+        sum += Number($(this).val());
+    });
+
+    return sum.toFixed(2);
+}
+
+function validate_form() {
+    var ok = true;
+    $('.final-stock input').each(function() {
+        var val = $(this).val();
+        var max_value = $(this).attr('data-max');
+        if (val=='' || val<=0 ){
+            $(this).css({'border':'1px solid #f00'});
+            ok = false;
+        }
+    });
+
+    $('.uplift input').each(function() {
+        var val = $(this).val();
+        var max_value = $(this).attr('data-max');
+        if (val=='' || val > Number(max_value) ){
+            $(this).css({'border':'1px solid #f00'});
+            ok = false;
+        }
+    });
+
+    return ok;
+}
+</script>
+{% endblock %}

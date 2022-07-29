@@ -1,0 +1,407 @@
+{% extends "admin/base_site.html" %} {% load i18n l10n static %} {% load order_tags %} {% load admin_urls %} {% load
+admin_urls %} {% block branding %}
+<h1 id="site-name">{{site_title}}</h1>
+{% endblock %} {% block header %} {{ block.super }}
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}" />
+
+{% endblock %} {% block breadcrumbs %}
+<div class="breadcrumbs">
+  <link rel="stylesheet" href="{% static 'admin/orders/css/dispatch_stockist_order.css' %}" />
+  <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a> &rsaquo; <a href="/admin/orders">Orders</a> &rsaquo;
+  <a href="{% url 'admin:orders_distributororder_changelist' %}">Secondary Orders</a> &rsaquo; {% trans title %}
+</div>
+{% endblock %} {% block content %}
+<div id="overlay-spinner">
+    <div class="cp-spinner cp-round"></div>
+</div>
+
+{% if not order %}
+<p>Order is already dispatched or you do not have access.</p>
+<div class="btn-group">
+  <input type="button" class="btn-danger" value="Go back" onClick="javascript:location.href='{{ ref_url }}';" />
+</div>
+
+{% else %}
+<form action="" method="post" id="dispatch_order">
+  {% csrf_token %}
+  <p>The following item(s) will be dispatched:</p>
+  <div class="module">
+      
+  
+<div class="flex flex-items-center">
+    <table width="100%">
+        <tr>
+            <td width="15%"><strong>Shakti Enterpreneur :</strong></td>
+            <td width="10%"><strong>{{order.shakti_enterpreneur.name}}</strong></td>
+        </tr>
+        <tr>
+            <td width="15%"><strong>Shakti Enterpreneur Code: </strong></td>
+            <td width="30%"><strong>{{shakti_code}}</strong></td>
+            <td colspan="3" width="75%"></td>
+        </tr>
+    </table>
+    <input type="button" id="myBtn" onclick="javascript:void();" value="Add Product" />
+</div>
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <div class="header flex flex-justify-between flex-items-center">
+            <h1>Add New Products</h1>
+            <span class="close">&times;</span>
+        </div>
+        <div class="module aligned flex flex-col gap-2">
+            <label class="required" for="id_basepack_name">Select Product</label>
+            <select id="add-product-id" name="state">
+                <option value="none" selected disabled hidden>Select an Option</option>
+                {% for item in distributor_products %}
+                <option 
+                {% if item.closing_stock == 0 %}
+                disabled
+                {% endif %}
+                    data-stock={{item.opening_stock}}
+                    value="{{item.product.id}}" 
+                    data-base-price="{{item.product.base_rate}}"
+                >
+                    {{item.product.basepack_name}} - {{ item.closing_stock }}
+                </option>
+                {% endfor %}
+            </select>
+            {% comment %} <label class="required" for="id_basepack_name">Quantity in Units</label>
+            <input type="number" id="add-product-quantity" />
+             {% endcomment %}
+        </div>
+        <div class="flex flex-justify-end gap-2">
+            <input type="button"  onclick="javascript:addProduct();" value="Add" />
+            <input type="button" id="cancel-button" onclick="javascript:void();" value="Cancel" />
+        </div>
+    </div>
+</div>
+<table id="result_list" width="100%">
+    <thead>
+        <tr>
+            <th scope="col" class="column-product_name">
+                <div class="text">Product Name</div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-available_stock">
+                <div class="text">Available Stock (In units)</div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-stockist_margin">
+                <div class="text">Stockist Margin</div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-unit_price">
+                <div class="text">Base Price (&#x20b9;)</div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-ordered_quantity">
+                <div class="text">Quantity Ordered (In Units)</div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-dispatched_quantity">
+                <div class="text">Quantity Dispatched (In Units)</div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-price">
+                <div class="text">Price (&#x20b9;)</div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-discount">
+                <div class="text">Discount Amount (&#x20b9;)</div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-discount">
+                <div class="text">Distributor Discount (&#x20b9;)</div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-cgst">
+                <div class="text">CGST (&#x20b9;)</div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-sgst">
+                <div class="text">SGST (&#x20b9;)</div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-igst">
+                <div class="text">IGST (&#x20b9;)</div>
+                <div class="clear"></div>
+            </th>
+            <th scope="col" class="column-amoun">
+                <div class="text">Net Amount (&#x20b9;)</div>
+                <div class="clear"></div>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for orderline in orderlines %} {% if orderline.product_info %} {% json_loads orderline.product_info as product_info %}
+        <tr class="row{{orderline.pk}}" data-item-id="{{orderline.pk}}">
+            <td class="nowrap product_name" data-product_id="{{orderline.product_id}}">
+                {{orderline.product.basepack_name}}
+            </td>
+            <td class="nowrap available_stock">
+                <input type="hidden" name="stockist_margin-{{orderline.pk}}" class="stockist_margin"
+                    value="{% if product_info %}{{product_info.brand__stockist_margin}} {% else %} 0 {% endif %}" />
+                <input type="hidden" name="applied_promos-{{orderline.pk}}" class="applied_promos"
+                    value="{{orderline.promotion.0}}" />
+                <input type="hidden" name="applied_promos_name-{{orderline.pk}}" class="applied_promos_name"
+                    value="{{orderline.promotion_applied}}" />
+                {{orderline.available_stock}}
+            </td>
+            {% if product_info %}
+            <td class="nowrap">{{product_info.brand__stockist_margin}}</td>
+            {% else %}
+            <td class="nowrap">0</td>
+            {% endif %}
+            <td class="nowrap unitprice">{{orderline.unitprice}}</td>
+            <td class="nowrap quantity">{{orderline.quantity}}</td>
+            <td class="nowrap">
+                <input type="number" maxlength="4" name="dispatch_quantity-{{orderline.pk}}"
+                    data-available-stock="{{orderline.available_stock}}" {%
+              {% if orderline.quantity < orderline.available_stock %}
+               value="{{orderline.quantity}}" 
+               {% else %}
+                value="{{ orderline.available_stock }}"
+                 {% endif %}
+                  class="dispatch_quantity" />
+                <input type="hidden" name="applied_discount-{{orderline.pk}}" class="applied_discount" value="0" />
+                <input type="hidden" name="applied_dis_discount-{{orderline.pk}}" class="applied_dis_discount"
+                    value="0" />
+            </td>
+            <td class="nowrap price">{{orderline.price}}</td>
+            <td class="nowrap discount">{{orderline.discount_amount}}</td>
+            <td class="nowrap dis_discount" data-discount-per="{{orderline.distributor_discount_percent}}">
+                {{orderline.distributor_discount}}
+            </td>
+            <td class="nowrap cgst" data-cgst-per="{{product_info.cgst}}">{{orderline.cgst}}</td>
+            <td class="nowrap sgst" data-sgst-per="{{product_info.sgst}}">{{orderline.sgst}}</td>
+            <td class="nowrap igst" data-igst-per="{{product_info.igst}}">{{orderline.igst}}</td>
+            <td class="nowrap net-amount">{{orderline.net_amount}}</td>
+        </tr>
+        {% else %}
+        <tr class="row{{orderline.pk}}" data-item-id="{{orderline.pk}}">
+            <td class="nowrap product_name" data-product_id="{{orderline.product_id}}">
+                {{orderline.product.basepack_name}}
+            </td>
+            <td class="nowrap available_stock">
+                <input type="hidden" name="stockist_margin-{{orderline.pk}}" class="stockist_margin"
+                    value="{{orderline.product.brand.stockist_margin}}" />
+                <input type="hidden" name="applied_promos-{{orderline.pk}}" class="applied_promos"
+                    value="{{orderline.promotion.0}}" />
+                <input type="hidden" name="applied_promos_name-{{orderline.pk}}" class="applied_promos_name"
+                    value="{{orderline.promotion_applied}}" />
+                {{orderline.available_stock}}
+            </td>
+
+            <td class="nowrap">{{orderline.product.brand.stockist_margin}}</td>
+            <td class="nowrap unitprice">{{orderline.unitprice}}</td>
+            <td class="nowrap quantity">{{orderline.quantity}}</td>
+            <td class="nowrap">
+                <input type="number" maxlength="4" name="dispatch_quantity-{{orderline.pk}}"
+                    data-available-stock="{{orderline.available_stock}}" value="{{orderline.quantity}}"
+                    class="dispatch_quantity" />
+                <input type="hidden" name="applied_discount-{{orderline.pk}}" class="applied_discount" value="0" />
+                <input type="hidden" name="applied_dis_discount-{{orderline.pk}}" class="applied_dis_discount"
+                    value="0" />
+            </td>
+            <td class="nowrap price">{{orderline.price}}</td>
+            <td class="nowrap discount">{{orderline.discount_amount}}</td>
+            <td class="nowrap dis_discount" data-discount-per="{{orderline.distributor_discount_percent}}">
+                {{orderline.distributor_discount}}
+            </td>
+            <td class="nowrap cgst" data-cgst-per="{{orderline.product.cgst}}">{{orderline.cgst}}</td>
+            <td class="nowrap sgst" data-sgst-per="{{orderline.product.sgst}}">{{orderline.sgst}}</td>
+            <td class="nowrap igst" data-igst-per="{{orderline.product.igst}}">{{orderline.igst}}</td>
+            <td class="nowrap net-amount">{{orderline.net_amount}}</td>
+        </tr>
+        {% endif %} {% endfor %}
+    </tbody>
+</table>
+<table>
+    <tr class="row">
+        <td class="nowrap"><strong>Total Quantity:</strong></td>
+        <td class="nowrap" id="total_dispatch_quantity"><strong>{% total_quantity orderlines %}</strong></td>
+    </tr>
+    <tr>
+        <td class="nowrap"><strong>Total Amount:</strong></td>
+        <td class="nowrap" id="total_amount"><strong>&#x20b9; {% total_amount orderlines %}</strong></td>
+    </tr>
+</table>
+</div>
+<div>
+    <div class="btn-group">
+        <input type="hidden" name="promotions" value="{{promotions}}" id="promotions" />
+        <input type="hidden" name="distributoroffers" value="{{distributoroffers}}" id="distributoroffers" />
+        <input type="hidden" name="dispatch_order_submit" value="yes" id="id_dispatch_order_submit" />
+        <input type="button" class="btn-danger" value="Cancel" onClick="javascript:location.href='{{ ref_url }}';" />
+        <input type="button" onclick="javascript:confirmOrder();" value="{% trans 'Dispatch Order' %}" />
+    </div>
+</div>
+</form>
+<input type="hidden"  value="{% url 'add_product_secondary_order' %}" id="add-product-url" />
+<input type="hidden"  value="{{order.id}}" id="order-id" />
+        
+{% endif %} {% endblock %} {% block footer %} {{ block.super }}
+
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}">
+</script>
+<script type="text/javascript" src="{% static 'admin/orders/js/dispatch_stockist_order.js' %}">
+</script>
+<script>
+    function confirmOrder() {
+        if (!validate_form()) {
+            alert("Please enter correct dispatch quantity.");
+            return false;
+        }
+
+        if (!validate_available_stock()) {
+            alert("Insufficient Stock.");
+            return false;
+        }
+        if (confirm("Are you sure you want to dispatch this order? Order once dispatched will not be modified.")) {
+            document.getElementById("dispatch_order").submit();
+        }
+    }
+    if (!$) {
+        $ = django.jQuery();
+    }
+    $(document).ready(function () {
+        $(".dispatch_quantity").on("keydown", function () {
+            $(this).css({
+                border: "1px solid #ccc",
+            });
+        });
+
+        $(".dispatch_quantity").on("blur keyup", function () {
+            var ordered_quantity = Number($(this).parent().prev().html());
+            var dispatch_quantity = Number($(this).val());
+            var row_id = $(this).parent().parent().attr("data-item-id");
+            var available_stock = Number($(this).attr("data-available-stock"));
+
+            if (dispatch_quantity == "" || dispatch_quantity < 0) {
+                $(this).css({
+                    border: "1px solid red",
+                });
+                return false;
+            }
+
+            var total_quantity = calculate_dispatch_quantity();
+            var price = update_product_price(row_id);
+            var total_price = calculate_total_price();
+            $("#total_dispatch_quantity").html("<strong>" + total_quantity + "</strong>");
+            $("#total_amount").html("<strong>&#x20b9; " + total_price + "</strong>");
+        });
+    });
+
+    function calculate_dispatch_quantity() {
+        var sum = 0;
+        $(".dispatch_quantity").each(function () {
+            sum += Number($(this).val());
+        });
+
+        return sum;
+    }
+
+    function update_product_price(row_id) {
+        var row = $(".row" + row_id);
+        var quantity = Number(row.find(".dispatch_quantity").val());
+        var unitprice = Number(row.find(".unitprice").html());
+        var cgst = Number(row.find(".cgst").data("cgst-per"));
+        var sgst = Number(row.find(".sgst").data("sgst-per"));
+        var igst = Number(row.find(".igst").data("igst-per"));
+
+        var price = quantity * unitprice;
+        row.find(".price").html(price.toFixed(5));
+        var discount_per = calculate_discount(row, quantity);
+
+        discount = (price * discount_per) / 100;
+
+        var dis_discount_per = Number(row.find(".dis_discount").data("discount-per"));
+        dis_discount = ((price - discount) * dis_discount_per) / 100;
+
+        var taxable_amount = price - discount - dis_discount;
+        var cgst_am = parseFloat(((taxable_amount * cgst) / 100).toFixed(5));
+        var sgst_am = parseFloat(((taxable_amount * sgst) / 100).toFixed(5));
+        var igst_am = parseFloat(((taxable_amount * igst) / 100).toFixed(5));
+
+        row.find(".cgst").html(cgst_am);
+        row.find(".sgst").html(sgst_am);
+        row.find(".igst").html(igst_am);
+
+        row.find(".dis_discount").html(dis_discount.toFixed(5));
+        row.find(".discount").html(discount.toFixed(5));
+        row.find(".applied_discount").val(discount.toFixed(5));
+        row.find(".applied_dis_discount").val(dis_discount.toFixed(5));
+
+        tax = cgst_am + sgst_am + igst_am;
+        total_amount = taxable_amount + tax;
+
+        var stockist_margin = Number(row.find(".stockist_margin").val());
+        // var stockist_margin_am = 0; //(total_amount * stockist_margin) / 100;
+        // total_amount = total_amount + stockist_margin_am;
+
+        row.find(".net-amount").html(total_amount.toFixed(5));
+    }
+
+    function calculate_discount(row, quantity) {
+        var product_id = Number(row.find(".product_name").data("product_id"));
+        promos = jQuery.parseJSON($("#promotions").val());
+        var discount = (promo_id = 0);
+
+        $(promos).each(function () {
+            if (this.buy_product == product_id && this.discount != null) {
+                if (this.buy_quantity <= quantity) {
+                    row.find(".applied_promos").val(this.promotion_id);
+                    row.find(".applied_promos_name").val(this.promotion_name);
+                    discount = this.discount;
+                    return false;
+                }
+            }
+        });
+        if (discount == 0) {
+            row.find(".applied_promos").val(0);
+            row.find(".applied_promos_name").val("");
+        }
+        return discount;
+    }
+
+    function calculate_total_price() {
+        var sum = 0;
+        $(".net-amount").each(function () {
+            sum += Number($(this).html());
+        });
+
+        return sum.toFixed(5);
+    }
+
+    function validate_form() {
+        var ok = true;
+        $(".dispatch_quantity").each(function () {
+            var val = $(this).val();
+            var order_val = $(this).parent().parent().find(".quantity").html();
+            var available_stock = $(this).attr("data-available-stock");
+            if (val == "" || val < 0 || val != parseInt(val, 10)) {
+                ok = false;
+            }
+        });
+        return ok;
+    }
+
+    function validate_available_stock() {
+        var ok = true;
+        $(".dispatch_quantity").each(function () {
+            var val = $(this).val();
+            var available_stock = $(this).attr("data-available-stock");
+            if (parseInt(val, 10) > parseInt(available_stock, 10)) {
+                $(this).css({
+                    border: "1px solid red",
+                });
+                ok = false;
+            }
+        });
+        return ok;
+    }
+
+
+ 
+</script>
+{% endblock %}

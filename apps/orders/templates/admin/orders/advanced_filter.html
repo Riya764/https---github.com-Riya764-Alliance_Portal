@@ -1,0 +1,197 @@
+{% extends "admin/change_form.html" %}
+{{ form.media }}
+{% load i18n admin_static admin_modify order_tags static %}
+{% block content %}
+
+<div id="content-main">
+	<div class="module filtered" id="changelist">
+		<fieldset class="module aligned cols-2">
+			<form method="GET" class="post-form" id="advanced_search">
+				{{ form.as_p }}
+				<div class="submit-row">
+					<div class="float-left">
+						<input type="button" value="Clear" class="reset" style="float: left;" name="_reset"/>
+						<input type="submit" class="default" name="_search" value="Search"/>
+					</div>
+					<div class="float-right">
+						<a href="download-csv/?{{ request.GET.urlencode }}" {% if not data %} onclick="return false;" {% endif %} class="default">&nbsp;Download Record(s)</a>
+					</div>
+				</div>
+
+			</form>
+		</fieldset>
+		<form id="changelist-form" method="post" novalidate="">
+			{%csrf_token%}
+			<div class="results">
+				<table id="result_list">
+					<thead>
+						<tr>
+							<th scope="col" class="column-get_order_id">
+								<div class="text"><span>Order Number</span></div>
+								<div class="clear"></div>
+							</th>
+							<th scope="col" class="sortable column-distributor">
+								<div class="text"><span>Ordered Date</span></div>
+								<div class="clear"></div>
+							</th>
+							<th scope="col" class="sortable column-created">
+								<div class="text"><span>Alliance Partner</span></div>
+								<div class="clear"></div>
+							</th>
+							<th scope="col" class="column-order_status">
+								<div class="text"><span>Redistribution Stockist</span></div>
+								<div class="clear"></div>
+							</th>
+							<th scope="col" class="sortable column-payment_status">
+								<div class="text"><span>Rural Sales Promoter</span></div>
+								<div class="clear"></div>
+							</th>
+							<th scope="col" class="column-order_actions">
+								<div class="text"><span>Shakti Enterprenuer Code</span></div>
+								<div class="clear"></div>
+							</th>
+							<th scope="col" class="column-order_actions">
+								<div class="text"><span>Shakti Enterprenuer</span></div>
+								<div class="clear"></div>
+							</th>
+							<th scope="col" class="column-order_actions">
+								<div class="text"><span>SKU</span></div>
+								<div class="clear"></div>
+							</th>
+							<th scope="col" class="column-order_actions">
+								<div class="text"><span>Units</span></div>
+								<div class="clear"></div>
+							</th>
+							<th scope="col" class="column-order_actions">
+								<div class="text"><span>Total Amount</span></div>
+								<div class="clear"></div>
+							</th>
+							<th scope="col" class="column-order_actions">
+								<div class="text"><span>Item Status</span></div>
+								<div class="clear"></div>
+							</th>
+							<th scope="col" class="column-order_actions">
+								<div class="text"><span>Payment Status</span></div>
+								<div class="clear"></div>
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% if data %}
+						{% for record in data %}
+						<tr class="row1">
+							<td class="field-get_order_id">
+								{% if ordertype == usertype or usertype == 'superuser' %}
+								<a href="/admin/orders/{{url}}/{{record.id}}/change/">{{record.invoice_number}}</a> {% else %} {{record.invoice_number}}
+								{% endif %}
+							</td>
+							<td class="field-created nowrap">{{record.created}}</td>
+							<td class="field-created nowrap">
+								{% if record.alliance_name != None %} {{record.alliance_name}} {% endif %}
+							</td>
+							<td class="field-created nowrap">
+								{% if record.distributor_name != None%} {{record.distributor_name}} {% endif %}
+							</td>
+							<td class="field-created nowrap">
+								{% if record.rsp_name != None %} {{record.rsp_name}} {% endif %}
+							</td>
+							<td class="field-created nowrap">
+								{% if record.shakti_enterpreneur_code != None %} {{record.shakti_enterpreneur_code}} {% endif %}
+							</td>
+							<td class="field-created nowrap">
+								{% if record.shakti_enterpreneur_name != None %} {{record.shakti_enterpreneur_name}} {% endif %}
+							</td>
+							<td class="field-created nowrap">
+								{{record.basepack_name}}
+							</td>
+							<td class="field-created nowrap">
+								{% if record.dispatch_quantity != None %} {{record.dispatch_quantity}} {% else %} {{record.quantity}} {% endif %}
+							</td>
+							<td class="field-created nowrap">{{record.item_price}}</td>
+							<td class="field-created nowrap">{% item_status_display record.item_status %}</td>
+							<td class="field-created nowrap">{% payment_status_display record.payment_status %}</td>
+						</tr>
+						{% endfor %}
+						{% else %}
+						<td colspan="3">No Record Found</td>
+						{% endif %}
+					</tbody>
+				</table>
+				{% if data %}
+				<p class="paginator">
+					{% if not in_leading_range %} {% for p in pages_outside_trailing_range %}
+					<a style="padding: 2px 6px; background: #79aec8; text-decoration: none; color: #fff;" href="{% if get_params %}?{{ get_params }}&{% else %}?{% endif %}page={{ p }}">{{ p }}</a>					{% endfor %}
+					<span class="ellipsis">...</span> {% endif %} {% for p in page_range %} {% if p == page %}
+					<span style="background-color: #417690; padding: 2px 6px 2px 6px; color: white;" class="active">{{ p }}</span> {% else %}
+					<a style="padding: 2px 6px; background: #79aec8; text-decoration: none; color: #fff;" href="{% if get_params %}?{{ get_params }}&{% else %}?{% endif %}page={{ p }}">{{ p }}</a>					{% endif %} {% endfor %} {% if not in_trailing_range %}
+					<span class="ellipsis">...</span> {% for p in pages_outside_leading_range reversed %}
+					<a style="padding: 2px 6px; background: #79aec8; text-decoration: none; color: #fff;" href="{% if get_params %}?{{ get_params }}&{% else %}?{% endif %}page={{ p }}">{{ p }}</a>					{% endfor %} {% endif %} {{ total_count }} record(s) found.
+				</p>
+				{% endif %}
+			</div>
+		</form>
+	</div>
+</div>
+<style>
+	.timezonewarning{display: none;}
+	ul li {list-style-type: none;}
+	td, th{padding: 8px 20px;}
+</style>
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'admin/js/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/core.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/calendar.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/admin/DateTimeShortcuts.js' %}"></script>
+<script type="text/javascript">
+	(function($) {
+   		$(".reset").click(function() {
+			$(this).closest('form').find(".clear").val("");
+			//$(this).closest('form')[0].reset();
+		});
+		
+		$(button).click( function () {
+			alert($(this).attr('name'));
+		});
+		$('#advanced_search').submit(function (ev) {
+			ev.preventDefault();
+			$("div.errornote").remove();
+			if (amount_validation() & date_validation()) {
+				this.submit();
+			}
+		});
+
+		function amount_validation() {
+			start_amount = $('#id_start_amount').val();
+			end_amount = $('#id_end_amount').val();
+			if (start_amount) {
+				if (end_amount) {
+					if (parseInt(end_amount) < parseInt(start_amount)) {
+						$("#content-main").prepend('<div class="errornote">End Amount should not be less than start amount.</div>');
+						$('html,body').animate({scrollTop: 0});
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+
+		function date_validation() {
+			start_date = $('#id_start_date').val();
+			end_date = $('#id_end_date').val();
+
+			if (start_date && end_date) {
+				if (end_date < start_date) {
+					$("#content-main").prepend('<div class="errornote">End date should not be less than start date.</div>');
+					$('html,body').animate({scrollTop: 0});
+					return false;
+				}
+			
+			}
+			return true;
+		}
+
+	})(django.jQuery);
+	
+</script>
+{% endblock %}

@@ -1,0 +1,663 @@
+{% extends "admin/change_form.html" %} {{ form.media }}
+{% load i18n admin_static admin_modify order_tags static %} {% block content %}
+
+<style>
+    #export-progress-container {
+        display: none;
+        margin: auto;
+        width: 60%;
+        padding: 10px 10px 10px 10px
+    }
+
+    @-webkit-keyframes progress-bar-stripes {
+        from {
+            background-position: 1rem 0;
+        }
+
+        to {
+            background-position: 0 0;
+        }
+    }
+
+    @keyframes progress-bar-stripes {
+        from {
+            background-position: 1rem 0;
+        }
+
+        to {
+            background-position: 0 0;
+        }
+    }
+
+    .progress {
+        display: -ms-flexbox;
+        display: flex;
+        height: 1rem;
+        overflow: hidden;
+        font-size: 0.75rem;
+        background-color: #e9ecef;
+        border-radius: 0.25rem;
+    }
+
+    .progress-bar {
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-direction: column;
+        flex-direction: column;
+        -ms-flex-pack: center;
+        justify-content: center;
+        color: #fff;
+        text-align: center;
+        white-space: nowrap;
+        background-color: #007bff;
+        transition: width 0.6s ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .progress-bar {
+            transition: none;
+        }
+    }
+
+    .progress-bar-striped {
+        background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+        background-size: 1rem 1rem;
+    }
+
+    .progress-bar-animated {
+        -webkit-animation: progress-bar-stripes 1s linear infinite;
+        animation: progress-bar-stripes 1s linear infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .progress-bar-animated {
+            -webkit-animation: none;
+            animation: none;
+        }
+    }
+</style>
+
+<div id="content-main">
+  <div id="export-progress-container" class="col-md-12">
+	  <div style="display:flex;justify-content: space-between;padding-bottom:5px">
+            <div id="export-progress-message">Waiting for download to start . . .</div>
+            <div id="export-progress-elapsed"></div>
+        </div>
+        <div class="progress">
+            <div id="export-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated"
+                role="progressbar" aria-valuemin="0" aria-valuemax="100">
+            </div>
+    </div>
+    </div>
+    <div class="module filtered" id="changelist">
+        <fieldset class="module aligned cols-2">
+            <form method="GET" class="post-form" id="advanced_search">
+
+                {{ form.as_p }}
+                <div class="submit-row">
+                    <div class="float-left">
+                        <input type="button" value="Clear" class="reset" style="float: left;"
+                            name="_reset" />
+                        <input type="submit" class="default" name="_search" value="Search" />
+                    </div>
+                    <div class="float-right">
+                        <a href="#" data-url="download-csv/?{{ request.GET.urlencode }}" {% if not data %}
+                            onclick="return false;" {% else %} onclick="runExportData()" {% endif %} id="download-link"
+                            class="default">&nbsp;Download
+                            Record(s)</a>
+                    </div>
+                </div>
+            </form>
+        </fieldset>
+        <form id="changelist-form" method="post" novalidate="">
+            {%csrf_token%}
+            <div class="results">
+                <table id="result_list">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="column-get_order_id">
+                                <div class="text"><span>Invoice Number</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-get_order_id">
+                                <div class="text"><span>Invoice Date</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="sortable column-distributor">
+                                <div class="text"><span>Ordered Date</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-get_order_id">
+                                <div class="text"><span>Invoice Value</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-get_order_id">
+                                <div class="text"><span>Place of Supply</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="sortable column-created">
+                                <div class="text"><span>Alliance Partner</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_status">
+                                <div class="text"><span>Redistribution Stockist</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="sortable column-payment_status secondary">
+                                <div class="text"><span>Rural Sales Promoter</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>Shakti Enterprenuer Code</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>Shakti Enterprenuer</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions">
+                                <div class="text"><span>GST Number</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions">
+                                <div class="text"><span>MoC</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions">
+                                <div class="text"><span>Basepack Name</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions">
+                                <div class="text"><span>Cases</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions">
+                                <div class="text"><span>Units</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions">
+                                <div class="text"><span>Base Price</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions">
+                                <div class="text"><span>CGST Amount</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions">
+                                <div class="text"><span>SGST Amount</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions">
+                                <div class="text"><span>IGST Amount</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions">
+                                <div class="text"><span>Net Amount</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions">
+                                <div class="text"><span>Item Status</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions">
+                                <div class="text"><span>Payment Status</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions">
+                                <div class="text"><span>HSN Code</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>Taxable Amount</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>UPC</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>CGST Rate</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>SGST Rate</span></div>
+                                <div class="clear"></div>
+                            </th>
+                            <th scope="col" class="column-order_actions secondary">
+                                <div class="text"><span>IGST Rate</span></div>
+                                <div class="clear"></div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="records">
+                        {% if data %} {% for record in data %}
+                        <tr class="row1">
+                            <td class="field-get_order_id">
+                                {% if ordertype == usertype or usertype == 'superuser' %}
+                                <a
+                                    href="/admin/orders/{{url}}/{{record.id}}/change/">{{record.invoice_number}}</a>
+                                {% else %} {{record.invoice_number}} {% endif %}
+                            </td>
+                            <td class="field-created nowrap">{{record.dispatched_on | date:"d M Y"}}</td>
+                            <td class="field-created nowrap">{{record.created | date:"d M Y"}}</td>
+                            <td class="field-created nowrap">{{record.total_amount}}</td>
+                            <td class="field-created nowrap">{{record.place_of_supply}}</td>
+                            <td class="field-created nowrap">
+                                {% if record.alliance_name != None %} {{record.alliance_name}}
+                                {% endif %}
+                            </td>
+                            <td class="field-created nowrap">
+                                {% if record.distributor_name != None%} {{record.distributor_name}}
+                                {% endif %}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {% if record.rsp_id != None %} {{record.rsp_id}} {% endif %}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {% if record.shakti_enterpreneur_code != None %}
+                                {{record.shakti_enterpreneur_code}} {% endif %}
+                            </td>
+                            <td class="field-created nowrap secondary">
+                                {% if record.shakti_enterpreneur_name != None %}
+                                {{record.shakti_enterpreneur_name}} {% endif %}
+                            </td>
+                            <td class="field-created nowrap">
+                                {{record.gst_code}}
+                            </td>
+                            <td class="field-created nowrap">
+                                {{record.moc_name}}
+                            </td>
+                            <td class="field-created nowrap">
+                                {{record.basepack_name}}
+                            </td>
+                            <td class="field-created nowrap">
+                                {{record.cases}}
+                            </td>
+                            <td class="field-created nowrap">
+                                {{record.quantity}}
+                            </td>
+                            <td class="field-created nowrap">
+                                {{record.unitprice}}
+                            </td>
+                            <td class="field-created nowrap">
+                                {{record.cgst_amount}}
+                            </td>
+                            <td class="field-created nowrap">
+                                {{record.sgst_amount}}
+                            </td>
+                            <td class="field-created nowrap">
+                                {{record.igst_amount}}
+                            </td>
+                            <td class="field-created nowrap">{{record.net_amount}}</td>
+                            <td class="field-created nowrap">
+                                {% item_status_display record.item_status %}</td>
+                            <td class="field-created nowrap">
+                                {% payment_status_display record.payment_status %}</td>
+                            <td class="field-created nowrap">
+                                {{record.hsn_code}}
+                            </td>
+                            <td class="field-created nowrap">
+                                {{record.price}}
+                            </td>
+                            <td class="field-created nowrap">
+                                {{record.cld_configurations}}
+                            </td>
+                            <td class="field-created nowrap">
+                                {{record.cgst}}
+                            </td>
+                            <td class="field-created nowrap">
+                                {{record.sgst}}
+                            </td>
+                            <td class="field-created nowrap">
+                                {{record.igst}}
+                            </td>
+                        </tr>
+                        {% endfor %} {% else %}
+                        <tr class="norecord">
+                            <td colspan="3">No Record Found</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                {% if data %}
+                <p class="paginator">
+                    {% if not in_leading_range %} {% for p in pages_outside_trailing_range %}
+                    <a style="padding: 2px 6px; background: #79aec8; text-decoration: none; color: #fff;"
+                        href="{% if get_params %}?{{ get_params }}&{% else %}?{% endif %}page={{ p }}">{{ p }}</a>
+                    {% endfor %}
+                    <span class="ellipsis">...</span> {% endif %} {% for p in page_range %}
+                    {% if p == page %}
+                    <span style="background-color: #417690; padding: 2px 6px 2px 6px; color: white;"
+                        class="active">{{ p }}</span> {% else %}
+                    <a style="padding: 2px 6px; background: #79aec8; text-decoration: none; color: #fff;"
+                        href="{% if get_params %}?{{ get_params }}&{% else %}?{% endif %}page={{ p }}">{{ p }}</a>
+                    {% endif %} {% endfor %} {% if not in_trailing_range %}
+                    <span class="ellipsis">...</span>
+                    {% for p in pages_outside_leading_range reversed %}
+                    <a style="padding: 2px 6px; background: #79aec8; text-decoration: none; color: #fff;"
+                        href="{% if get_params %}?{{ get_params }}&{% else %}?{% endif %}page={{ p }}">{{ p }}</a>
+                    {% endfor %} {% endif %} {{ total_count }} record(s) found.
+                </p>
+                {% endif %}
+            </div>
+            <input type="hidden" name="urls" id="urls"
+                data-shakti="{% url 'misreporting:shakti-by-rsp' %}"
+                data-rsp="{% url 'misreporting:rsp-by-distributor' %}"
+                data-distributor="{% url 'misreporting:distributor-by-brand' %}"> </form>
+    </div>
+</div>
+<style>
+    .timezonewarning {
+        display: none;
+    }
+
+    ul li {
+        list-style-type: none;
+    }
+
+    td,
+    th {
+        padding: 8px 20px;
+    }
+</style>
+<script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'admin/js/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/core.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/calendar.js' %}"></script>
+<script type="text/javascript" src="{% static 'admin/js/admin/DateTimeShortcuts.js' %}"></script>
+<script type="text/javascript">
+    (function ($) {
+        if ($('#id_order_type_0').is(':checked')) {
+            $('#id_sales_promoter').parent().hide();
+            $('#id_shakti_enterpreneur').parent().hide();
+            $('#id_order_status').parent().hide();
+            $('#id_order_status_ap').parent().show();
+            $('.secondary').hide();
+        } else {
+            $('.secondary').show();
+            $('#id_sales_promoter').parent().show();
+            $('#id_shakti_enterpreneur').parent().show();
+            $('#id_order_status').parent().show();
+            $('#id_order_status_ap').parent().hide();
+
+        }
+
+        $('#id_order_type_0').click(function () {
+            $('.secondary').hide();
+            $('#id_sales_promoter').parent().hide();
+            $('#id_shakti_enterpreneur').parent().hide();
+            $('#id_order_status').parent().hide();
+            $('#id_order_status_ap').parent().show();
+            $('.records').html("<td>No record found</td>");
+            $('.paginator').hide();
+
+        });
+
+        $('#id_order_type_1').click(function () {
+            $('.secondary').show();
+            $('#id_sales_promoter').parent().show();
+            $('#id_shakti_enterpreneur').parent().show();
+            $('#id_order_status').parent().show();
+            $('#id_order_status_ap').parent().hide();
+            $('.records').html("<td>No record found</td>");
+            $('.paginator').hide();
+        });
+
+        var brand = $('#id_brand').val();
+        if (brand != '') {
+            distributor_by_brand(brand);
+        }
+
+        var distributor_list = $('#id_redistribution_stockist > option').clone();
+
+        $('#id_brand').on('change', function () {
+            var brand = $(this).val()
+            if (brand != '') {
+                distributor_by_brand(brand);
+            } else {
+                $('#id_redistribution_stockist').html(distributor_list);
+                $('#id_redistribution_stockist').val('');
+            }
+        });
+
+        function distributor_by_brand(brand) {
+            $('#id_redistribution_stockist > option').show();
+            var get_url = $('#urls').data('distributor');
+            if (brand != '') {
+                $.get(get_url, {
+                    'brand': brand
+                },
+                    function (data) {
+                        // if (data.success) {
+                        options = filtered_list(distributor_list, data.distributors)
+                        $('#id_redistribution_stockist').html(options);
+                        // $('#id_redistribution_stockist > option').each(function () {
+                        //     value = parseInt($(this).val());
+                        //     if (!isNaN(value) && Object.values(data.distributors).indexOf(value) == -1) {
+                        //         $(this).hide();
+                        //     }
+                        // });
+                        // }
+                    }
+                );
+            }
+        }
+
+        var distributor = $('#id_redistribution_stockist').val();
+        if (distributor != '') {
+            rsp_by_distributor(JSON.stringify(distributor));
+        }
+
+        var rsp_list = $('#id_sales_promoter > option').clone();
+
+        $('#id_redistribution_stockist').on('change', function () {
+            var distributor = $(this).val();
+            if (distributor != '') {
+                rsp_by_distributor(JSON.stringify(distributor));
+            } else {
+                $('#id_sales_promoter').html(rsp_list);
+                $('#id_sales_promoter').val('');
+            }
+        });
+
+        function rsp_by_distributor(distributor) {
+            $('#id_sales_promoter > option').show();
+            var get_url = $('#urls').data('rsp');
+            if (distributor != '') {
+                $.get(get_url, {
+                    'distributor': distributor
+                },
+                    function (data) {
+                        if (data.success) {
+                            options = filtered_list(rsp_list, data.rsps)
+                            $('#id_sales_promoter').html(options);
+                            // $('#id_sales_promoter > option').each(function () {
+                            //     value = parseInt($(this).val());
+                            //     if (!isNaN(value) && Object.values(data.rsps).indexOf(value) == -1) {
+                            //         $(this).hide();
+                            //     }
+                            // });
+                        }
+                    }
+                );
+            }
+        }
+
+        // var rsp = $('#id_sales_promoter').val();
+        // if (rsp != '') {
+        //     shakti_by_rsp(JSON.stringify(rsp));
+        // }
+
+        // var shakti_list = $('#id_shakti_enterpreneur > option').clone();
+
+        // $('#id_sales_promoter').on('change', function () {
+        //     var rsp = $(this).val();
+        //     if (rsp != '') {
+        //         shakti_by_rsp(JSON.stringify(rsp));
+        //     } else {
+        //         $('#id_shakti_enterpreneur').html(shakti_list);
+        //         $('#id_shakti_enterpreneur').val('');
+        //     }
+        // });
+
+
+        // function shakti_by_rsp(rsp) {
+        //     $('#id_shakti_enterpreneur > option').show();
+        //     var get_url = $('#urls').data('shakti');
+        //     if (rsp != '') {
+        //         $.get(get_url, {
+        //             'rsp': rsp
+        //         },
+        //             function (data) {
+        //                 // if (data.success) {
+        //                 options = filtered_list(shakti_list, data.shaktis)
+        //                 $('#id_shakti_enterpreneur').html(options);
+        //                 // $('#id_shakti_enterpreneur > option').each(function () {
+        //                 //     value = parseInt($(this).val());
+        //                 //     if (!isNaN(value) && Object.values(data.shaktis).indexOf(value) == -1) {
+        //                 //         $(this).css({ "visibility": "hidden" });
+        //                 //     }
+        //                 //     else {
+        //                 //         $(this).css({ "visibility": "visible" });
+        //                 //     }
+        //                 // });
+        //                 // }
+        //             }
+        //         );
+        //     }
+        // }
+        $(".reset").click(function () {
+            $(this).closest('form').find(".clear").val("");
+            //$(this).closest('form')[0].reset();
+        });
+
+        $('#advanced_search').submit(function (ev) {
+            ev.preventDefault();
+            $("div.errornote").remove();
+            if (amount_validation() & date_validation()) {
+                this.submit();
+            }
+        });
+
+        function amount_validation() {
+            start_amount = $('#id_start_amount').val();
+            end_amount = $('#id_end_amount').val();
+            if (start_amount) {
+                if (end_amount) {
+                    if (parseInt(end_amount) < parseInt(start_amount)) {
+                        $("#content-main").prepend('<div class="errornote">End Amount should not be less than start amount.</div>');
+                        $('html,body').animate({
+                            scrollTop: 0
+                        });
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function filtered_list(old_list, new_list) {
+            if (new_list.length > 0) {
+                options = old_list.filter(
+                    function (element) {
+                        value = parseInt($(this).val());
+                        return (new_list).indexOf(value) > -1
+                    }
+                )
+            } else {
+                options = []
+            }
+            return options
+        }
+
+        function date_validation() {
+            start_date = $('#id_start_date').val();
+            end_date = $('#id_end_date').val();
+
+            if (start_date && end_date) {
+                if (end_date < start_date) {
+                    $("#content-main").prepend('<div class="errornote">End date should not be less than start date.</div>');
+                    $('html,body').animate({
+                        scrollTop: 0
+                    });
+                    return false;
+                }
+
+            }
+            return true;
+        }
+
+        Object.values = function (obj) {
+            var res = [];
+            for (var i in obj) {
+                if (obj.hasOwnProperty(i)) {
+                    res.push(obj[i]);
+                }
+            }
+            return res;
+        };
+
+    })(django.jQuery);
+</script>
+
+<script src="{% static 'celery_progress/celery_progress.js' %}"></script>
+<script>
+    runExportData = () => {
+        django.jQuery.ajax({
+            type: "GET",
+            url: django.jQuery("#download-link").attr("data-url"),
+            success: (res) => {
+                getProgress(
+                    res,
+                    progressBarId = "export-progress-bar",
+                    progressBarMessageId = "export-progress-message",
+                    isDownloadFile = true
+                )
+            },
+            error: (err) => {
+                console.log(err);
+            },
+        })
+    }
+	
+
+    getProgress = (taskId, progressBarId, progressBarMessageId, isDownloadFile = false) => {
+        var progressUrl = `/async/task-status/?task_id=${taskId}`;
+        var start = +new Date();
+
+        function onExportUserProgress(progressBarElement, progressBarMessageElement, progress) {
+            ms = +new Date() - start
+            min = Math.floor((ms / 1000 / 60) << 0),
+                sec = Math.floor((ms / 1000) % 60);
+            django.jQuery("#export-progress-container").show()
+            document.getElementById("export-progress-elapsed").innerHTML = `Elasped - ${min} min : ${sec} sec `
+
+            progressBarMessageElement.innerHTML =
+                `Exporting ${progress.current} of ${progress.total} (${progress.percent}%)  `
+            progressBarElement.setAttribute("style", `width: ${progress.percent}%`)
+            progressBarElement.setAttribute("aria-valuenow", progress.percent)
+        }
+
+        function onExportUserSuccess(progressBarElement, progressBarMessageElement, result) {
+            progressBarMessageElement.innerHTML = "Success!";
+            progressBarElement.style.backgroundColor = '#76ce60';
+            if (isDownloadFile) window.open(`{% url 'download-export' %}?task_id=${taskId}`);
+        }
+
+        function onErrorDefault(progressBarElement, progressBarMessageElement) {
+            progressBarElement.style.backgroundColor = '#dc4f63';
+            progressBarMessageElement.innerHTML = "Error Occured.. Please try again or contact adminstrator";
+        }
+
+        CeleryProgressBar.initProgressBar(progressUrl, {
+            pollInterval: 1000,
+            progressBarId: progressBarId,
+            progressBarMessageId: progressBarMessageId,
+            onProgress: onExportUserProgress,
+            onSuccess: onExportUserSuccess,
+            onError: onErrorDefault
+        })	
+    }
+</script>
+{% endblock %}

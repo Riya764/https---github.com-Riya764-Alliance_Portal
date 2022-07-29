@@ -1,0 +1,18 @@
+{% extends "layouts/base.html" %}
+{% load staticfiles %}
+
+{% block main_content %}
+    <div class="top-banner-outer">
+      <div class="container">
+      	
+        <div class="row">
+           <div class="col-xs-12 text-center thank-you-con">
+               <img src="{% static 'preorder/images/error-icon.png' %}" width="161" height="143" alt="Error Icon">
+                <h1>Sorry!</h1>
+                <p>The page you were looking for could not be found.</p>
+                <a href="{% url '/' %}" title="GO TO HOME" class="back-btn">GO TO HOME AND TRY AGAIN</a>
+            </div> 
+        </div>
+      </div>
+    </div>
+{% endblock %}

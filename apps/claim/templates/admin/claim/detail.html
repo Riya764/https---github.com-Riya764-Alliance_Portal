@@ -1,0 +1,141 @@
+{% extends "admin/change_form.html" %} {% load i18n l10n static %} {% load claim_tags %} {% load admin_urls %} {% block branding %}
+<h1 id="site-name">{{site_title}}</h1>
+{% endblock %} {% block header %} {{ block.super }} {% endblock %} {% block breadcrumbs %}
+
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a> &rsaquo;
+    <a href="{% url 'admin:claim_claim_changelist' %}">Claims</a> &rsaquo; {% trans title %}
+</div>
+{% endblock %} {% block content %}
+<div>
+    <fieldset class="module aligned cols-2">
+        <div class="form-row">
+            <div>
+                <label>Claim ID:</label>
+                <p>CLM-{{detail.0.invoice_number}}</p>
+            </div>
+            <div>
+                <label>Claim Settlement Month:</label>
+                <p>{{detail.0.settlement_month}}, {{detail.0.settlement_year}}</p>
+            </div>
+        </div>
+        <div class="form-row">
+            <div>
+                <label>Redistribution Stockist:</label>
+                <p>{{detail.0.distributor}}</p>
+            </div>
+            <div>
+                <label>Alliance:</label>
+                <p>{{detail.0.alliance}}</p>
+            </div>
+        </div>
+    </fieldset>
+    <fieldset class="module aligned cols-2">
+        <div class="form-row">
+            <div>
+                <label>Ordered Amount:</label>
+                <p>{% total_ordered detail %}</p>
+            </div>
+        </div>
+        <div class="form-row">
+            <div>
+                <label>Discounted Amount:</label>
+                <p>{% total_discount detail bonus %}</p>
+            </div>
+        </div>
+        <div class="form-row">
+            <div>
+                <label>Claim Status:</label>
+                <p>{% claimstatus_label detail.0.claim_status %}</p>
+            </div>
+        </div>
+    </fieldset>
+    <div class="inline-group">
+        <div class="tabular inline-related last-related">
+            <fieldset class="module">
+                <h2>Claimed Product Details</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="2">Product Name</th>
+                            <th>Basepack Code</th>
+                            <th>Shakti Entrepreneur</th>
+                            <th>Shakti Entrepreneur Code</th>
+                            <th>Offer(s) Applied</th>
+                            <th>Amount Claimed (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in detail %}
+                        <tr class="form-row row1 has_original">
+                            <td colspan="2">
+                                <p>{{row.basepack_name}}</p>
+                            </td>
+                            <td>
+                                <p>{{row.basepack_code}}</p>
+                            </td>
+                            <td>
+                                <p>{{row.shakti_name}}</p>
+                            </td>
+                            <td>
+                                <p>{{row.code}}</p>
+                            </td>
+                            <td>
+                                <p>{{row.offer}}</p>
+                            </td>
+                            <td>
+                                <p>{{row.discount_amount}}</p>
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </fieldset>
+        </div>
+    </div>
+    <div class="inline-group">
+        <div class="tabular inline-related last-related">
+            <fieldset class="module">
+                <h2>Claimed Shakti Bonus Details</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="2">Shakti Entrepreneur</th>
+                            <th>Shakti Entrepreneur Code</th>
+                            <th>Target</th>
+                            <th>Amount Claimed (₹)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in bonus %}
+                        <tr class="form-row row1 has_original">
+                            <td colspan="2">
+                                <p>{{row.shakti_enterpreneur}}</p>
+                            </td>
+                            <td>
+                                <p>{{row.shakti_enterpreneur.code}}</p>
+                            </td>
+                            <td>
+                                <p>{{row.shakti_bonus_line.target_amount}}</p>
+                            </td>
+                            <td>
+                                <p>{{row.discount_amount}}</p>
+                            </td>
+
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </fieldset>
+        </div>
+    </div>
+    <div class="submit-row">
+        <input type="button" value="Go to Claims" class="default" onclick="javascript:history.go(-1);">
+    </div>
+
+</div>
+
+{% endblock %} {% block footer %} {{ block.super }}{% endblock %}

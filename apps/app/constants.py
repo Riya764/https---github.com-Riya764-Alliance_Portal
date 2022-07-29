@@ -1,0 +1,5 @@
+''' app/constants.py '''
+ALLIANCE_GROUP = 'Alliance'
+DISTRIBUTER_GROUP = 'Distributor'
+REGIONAL_SALES_PROMOTER = 'RegionalSalesPromoter'
+SHAKTI_ENTERPRENEUR = 'ShaktiEntrepreneur'
